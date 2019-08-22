@@ -1,0 +1,106 @@
+---
+title: "Lesson 1"
+author: "Nicholas Clark"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
+```
+
+In the United States, the 1963 Equal Pay Act requires that men and women be given equal pay for equal work and Title VII of the Civil Rights Act of 1964 prohibits discrimination on the basis of race, color, relgion, sex, and national origin.  How successful have these acts been?
+
+WageRace contains observations from 1987 for a sample of 25,632 males between the age of 18 and 70 who worked full-time along with their years of educaiton, years of experience, race, whether they worked in a standard metropolitan area, and the region of US where they worked.
+
+Primary research question is whether wages for blacks differ significantly from wages for non-blacks?
+
+```{r}
+wage.dat<-read.table("http://www.isi-stats.com/isi2/data/Wages.txt",header=T)
+```
+
+Identify the observational units in the study.  How many are there?
+
+```{r}
+nrow(wage.dat)
+#head(wage.dat) This gives the first couple of entries
+```
+
+Is the wages variable a quantitative or categorical variable?
+
+\vspace{.2in}
+
+```{r}
+ggplot(wage.dat,aes(x=wage))+geom_histogram(bins=100)
+ggplot(wage.dat,aes(y=wage))+geom_boxplot()+coord_flip()
+```
+
+Why are we looking at histograms and boxplots rater than a bar graph?
+
+\vspace{.2in}
+
+Does anything stand out to you about the boxplot that is less obvious in the histogram?
+
+\vspace{.2in}
+
+Which visual, the histogram or boxplot, do you like better?  Why?
+
+\vspace{.2in}
+
+Which is larger, the mean or the median?  How do you know?
+
+\vspace{.2in}
+
+Do the wages appear to follow a normal distribution?  How do you know?
+
+\vspace{.2in}
+
+In this study, the researchers were most interested in whether race explained differences in wages.
+
+Which variable is the explanatory variable?  Which is the response variable?
+
+\vspace{.2in}
+
+Do you think the explanatory variable explains some variation in the response variable?  Do you think it explains all of the variation in the response variable?  Why or why not?
+
+\vspace{.2in}
+```{r}
+ggplot(wage.dat,aes(y=wage,x=race))+geom_boxplot()+coord_flip()
+
+wage.dat%>%group_by(race)%>%summarise(n=n(),mean=mean(wage),StDev=sd(wage),Minimum=min(wage),Median=median(wage),Maximum=max(wage))
+```
+
+Consider whether there appears to be an association between wage and race:  Does the wage distribution differ substantially between blacks and non-blacks?  What is the difference in the mean weekly wages?  Can we conclude wage discrimination?
+
+\vspace{.2in}
+```{r}
+ggplot(wage.dat,aes(y=wage,x=educ))+geom_boxplot()+coord_flip()
+wage.dat%>%group_by(educ)%>%summarise(n=n(),mean=mean(wage),StDev=sd(wage),Minimum=min(wage),Median=median(wage),Maximum=max(wage))
+```
+
+Suggest an easy way to improve this graphical display to better focus on a trend of increasing salaries with increasing education.
+
+\vspace{.2in}
+
+Describe the association between education and wage.  Is it as you would have predicted?  Explain.
+
+\vspace{.2in}
+
+What would need to be true for education level to provide an alternative explanation for why non-blacks in this sample tended to earn more than blacks?
+
+```{r}
+ggplot(wage.dat,aes(y=wage,x=educ,fill=race))+geom_boxplot()+coord_flip()
+wage.dat%>%group_by(educ,race)%>%summarise(mean=mean(wage),StDev=sd(wage))
+```
+
+Is there a difference in the average wage between blacks and non-blacks in the "beyond college" group?  Is this difference larger or smaller than when we did not take the education level into account?
+
+\vspace{.2in}
+
+Do the lower average wages for blacks compared to non-blacks appear to be consistent across each of the education levels?
+
+\vspace{.2in}
+
+
