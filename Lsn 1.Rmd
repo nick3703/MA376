@@ -1,0 +1,151 @@
+---
+title: "Lesson 1"
+author: "Nicholas Clark"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
+```
+
+# Contact Information
+
+LTC Nick Clark
+
+nicholas.clark@westpoint.edu
+
+Thayer Hall Room 249
+
+845-938-7461
+
+#Course Overview
+
+\textit{Applied } Statistics
+
+-Learn Statistics by doing
+
+-Hands on/interactive
+
+-R/Rstudio
+
+-Course Overview
+
+-Graded Events
+
+#Introductions
+
+#Berkely Admissions Data
+
+In the early 1970s, the University of California at Berkeley was concerned with possible
+discrimination against women in its graduate admissions process. Data about the applicants for
+the 1972–73 school year were recorded from several programs, including their sex and whether
+or not they were accepted (Bickel & O’Connell, Science, 1975).
+
+```{r}
+#install.packages("tidyverse")
+library(tidyverse)
+berkley.data<-read.table("http://www.isi-stats.com/isi2/data/Berkeley.txt",header=T)
+```
+
+Observational Unit:
+
+\vspace{.5in}
+
+Response Variable:
+
+\vspace{.5in}
+
+Values Response Variable can take on:
+
+\vspace{.5in}
+
+Visualize
+
+```{r}
+ggplot(data=berkley.data,aes(Accepted))+geom_histogram(stat="count")
+```
+
+Explore
+```{r,include=F}
+no.program<-berkley.data %>% select(-Program)
+table(no.program)
+```
+Visualize the table:
+
+```{r}
+#install.packages
+library(ggmosaic)
+ggplot(data=no.program)+
+  geom_mosaic(aes(x=product(Accepted,Sex),fill=Accepted))
+```
+What's your thoughts?
+
+\vspace{.5in}
+
+What would the mosaic plot look like if sex was not associated with acceptance?
+
+\vspace{.5in}
+
+What other variables might help us predict whether or not someone would be accepted?
+
+\vspace{.4in}
+
+```{r}
+ggplot(data=berkley.data)+
+  geom_mosaic(aes(x=product(Accepted,Sex),fill=Accepted))+
+  facet_grid(Program~.)
+```
+
+What are your thoughts looking at this plot?
+
+\vspace{.4in}
+
+How can it be that females have higher acceptance rates than males in Program A AND in Program F but when we combine the two, the overall acceptance rate is noticeably smaller for females?
+
+\vspace{.4in}
+
+In examining gender and acceptance what is \textbf{confounding?}
+
+\vspace{.2in}
+
+What else could contribute to an admissions decision other than sex and program?
+
+\vspace{.5in}
+
+Sources of Variation Diagram:
+
+\vspace{1.in}
+
+\newpage
+
+Six Steps of a statistical investigation
+
+\begin{itemize}
+\item Ask a Research Question
+
+\item Design a study and collect data
+
+\item Explore the data
+
+\item Draw inferences beyond the data
+
+\item Formulate conclusions
+
+\item Look back and ahead
+
+\end{itemize}
+
+
+Did we do this with the Berkley Data?  What would you tell the college administrators?
+
+\vspace{4.in}
+
+
+Let's brainstorm how to write a statistical model for the Berkley data
+
+
+
+
