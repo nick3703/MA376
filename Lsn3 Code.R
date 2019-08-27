@@ -10,6 +10,8 @@ scent.dat<-read.table("http://www.isi-stats.com/isi2/data/OdorRatings.txt",heade
 #Code
 str(scent.dat)
 
+scent.dat%>%ggplot(aes(x=rating))+geom_histogram()
+
 scent.dat %>% summarize(mean=mean(rating),std=sd(rating))
 
 
