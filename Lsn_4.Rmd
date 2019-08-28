@@ -22,7 +22,7 @@ j & = \mbox{group}\\
 i & = \mbox{observation}\\
 y_{i,j}& = \mbox{response from the }i\mbox{th observation from the }j\mbox{th group}\\
 \bar{y}& = \mbox{Overall sample mean}\\
-\bar{y}_j = \mbox{Sample mean of the jth group}\\
+\bar{y}_j &= \mbox{Sample mean of the jth group}\\
 n &= \mbox{total sample size}\\
 n_j &= \mbox{group size of the jth group}
 \end{align*}
