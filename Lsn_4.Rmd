@@ -101,7 +101,7 @@ How is this different?  Can we fit this model?
 In R we can do:
 
 ```{r}
-contrasts(scent.dat$condition)=contr.sum
+contrasts(scent.dat$condition)=contr.treatment
 lm.mod=lm(rating~condition,data=scent.dat)
 summary(lm.mod)
 ```
