@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
 ```
 
 In the United States, the 1963 Equal Pay Act requires that men and women be given equal pay for equal work and Title VII of the Civil Rights Act of 1964 prohibits discrimination on the basis of race, color, relgion, sex, and national origin.  How successful have these acts been?
@@ -121,7 +121,7 @@ Sources of variation diagram:
 \vspace{1.in}
 
 ```{r}
-birthwt.dat<-read.csv("births.csv")
+birthwt.dat<-read.table("http://www.isi-stats.com/isi2/data/births.txt",header=T,fill=T)
 ```
 
 Explore:
@@ -164,9 +164,9 @@ What is going on?  Have we explained any variation?
 \vspace{.5in}
 
 ```{r}
-ggplot(aes(x=weight,color=full.term),data=birthwt.clean)+geom_histogram(fill="white", alpha=0.5, position="identity")
+ggplot(aes(x=weight,color=full),data=birthwt.clean)+geom_histogram(fill="white", alpha=0.5, position="identity")
 
-birthwt.clean%>%group_by(full.term)%>%
+birthwt.clean%>%group_by(full)%>%
   summarise(N=n(),Mean=mean(weight),StDev=sd(weight),Min=min(weight),Max=max(weight))
 ```
 
@@ -178,7 +178,7 @@ Our predicted model becomes:
 Standard error:
 ```{r}
 
-model<-lm(weight~0+full.term,data=birthwt.clean)
+model<-lm(weight~0+full,data=birthwt.clean)
 summary(model)
 ```
 
@@ -186,7 +186,7 @@ Does Mom's BMI impact weight?
 
 ```{r}
 birthwt.bmi<-birthwt.clean%>%filter(mom.BMI < 90)
-model<-lm(weight~0+full.term*mom.BMI,data=birthwt.bmi)
+model<-lm(weight~0+full*mom.BMI,data=birthwt.bmi)
 summary(model) #I think there's an error in book
 
 ```

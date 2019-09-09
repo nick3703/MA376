@@ -21,7 +21,7 @@ j & = \mbox{Scent status}\\
 i & = \mbox{Student}\\
 y_{i,j}& = \mbox{Store rating from the }i\mbox{th observation exposed to the }j\mbox{th scent}\\
 y_{i,j} & = \mu + \alpha_j + \epsilon_{i,j}\\
-\epsilon_{i,j} \sim F(0,\sigma)
+\epsilon_{i,j} &\sim F(0,\sigma)
 \end{align*}
 
 Which we obtained estimates of:
@@ -197,7 +197,7 @@ ggplot(data=emp.est,aes(x=stat))+geom_histogram(aes(y=..density..))+
   geom_density(data=x,aes(x=val),lwd=2,col="red",adjust=4)
 ```
 
-Once we have made our additional asusmptions we can now easily find things like confidence intervals.  Most CIs have the form:
+Once we have made our additional assumptions we can now easily find things like confidence intervals.  Most CIs have the form:
 
 \vspace{.3in}
 
@@ -219,3 +219,4 @@ Now that we have our results we can conduct step 5, formulate conclusions, and s
 
 Note the CI on page 72 of our text is wrong.  It should be multiplied by 2.013 not 2.103.
 
+## Exploration

@@ -1,0 +1,173 @@
+---
+title: "Lesson 6"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Admin
+
+## Status Check on Explorations
+
+## Multiple Groups
+
+Fish consuption and Omega-3.  The research question is, "Is there an association between the amount of fish consuption and omega-3 fatty acids level in the blood"
+
+
+30 generally healthy adults volunteered to participate in a study and were asked a single question,  How often do you eat tuna or other non-friend fish:  1 or fewer times a month, 2-3 times per month, 1 time per week, or morethan 2 times a week?  The individuals then had their omega-3 fatty acids measured directly via a blood test.
+
+Why is this an observational study?
+
+\vspace{.5in}
+
+
+Our sources of variation diagram is:
+
+\vspace{1.in}
+
+Our associated statistical model is:
+
+\vspace{1.in}
+
+We can fit this model using:
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+omega.dat<-read.table('http://www.isi-stats.com/isi2/data/FishOmega3.txt',fill=TRUE)
+
+
+omega.df<-data.frame(omega3=as.numeric(as.character(omega.dat$V1[-1])),omegaper=as.numeric(as.character(omega.dat$V2[-1])),fish=omega.dat$V3[-1],fishcat=(paste(omega.dat$V4,omega.dat$V5,                                                  omega.dat$V6,omega.dat$V7))[-1])
+
+omega.df <- omega.df %>% filter(omegaper < 9)
+
+group.means<-omega.df%>%group_by(fishcat)%>%summarize(mean=mean(omegaper),tot=n())
+group.means
+
+```
+
+Note that this can also be fit by:
+
+```{r}
+contrasts(omega.df$fishcat)<-contr.sum
+omega.lm<-lm(omegaper~fishcat,data=omega.df)
+summary(omega.lm)
+```
+What is being fit here?
+```{r,include=FALSE}
+model.matrix(omega.lm)
+```
+\vspace{1.in}
+
+Note here that $\mu$ is NOT the overall mean
+
+```{r}
+mean(omega.df$omegaper)
+```
+Why exactly this is is a bit beyond the scope of this course, but the one thing to note is that we don't have a nice neat balanced design, so it changes the meaning of our parameters a bit under the contr.sum.  What this value actually is the mean of the means
+```{r}
+mean(group.means$mean)
+```
+To see how well our multiple group model fits the data we can see how much of our variation our model accounts for.
+
+To do this we first find SST, recall SST is:
+
+\vspace{.4in}
+
+```{r}
+SST=sum((omega.df$omegaper-mean(omega.df$omegaper))^2)
+```
+
+Instead of directly finding SSM we will find SSE first:
+
+SSE is:
+
+\vspace{.5in}
+
+```{r}
+SSE=sum((omega.df$omegaper-omega.lm$fitted.values)^2)
+
+```
+So, SSM can be found from:
+```{r}
+SSM=SST-SSE
+SSM
+```
+Therefore $R^2$ is
+```{r}
+1-SSE/SST
+```
+What can we conclude at this point?
+
+\vspace{.5in}
+
+But we probably want to say something about the population, not about our study, so we want to test some hypothesis:
+
+\vspace{.5in}
+
+One statistic we can use to test this hypothesis is $R^2$.  So we have to get a feel for the distribution of $R^2$ under $H_0$.
+
+```{r}
+M<-5000
+stats.df<-data.frame(trial=seq(1,M),stat=NA)
+
+for(j in 1:M){
+  omega.df$shuffled.cat<-sample(omega.df$fishcat)
+  shuff.lm<-lm(omegaper~shuffled.cat,data=omega.df)
+  stats.df[j,]$stat<-summary(shuff.lm)$r.squared
+}
+
+#So if labels don't matter we get R2 values such as:
+
+#stats.df %>% ggplot(aes(x=stat))+geom_histogram()+
+#  geom_vline(xintercept=SSM/SST,color="red",lwd=2)
+
+stats.df %>% filter(stat>SSM/SST)%>%summarise(perc=n()/M)
+```
+
+So our strength of evidence against $H_0$ is pretty strong
+
+While $R^2$ is ok to use as a statistic, it turns out that there is a better choice.  If we had two groups what statistic would we use?
+
+\vspace{.3in}
+
+With multiple groups we can generalize this to an F statistic
+
+\vspace{.5in}
+
+```{r}
+dfmod=4 #We have five means, so our model is estimating 4 alpha values
+dfred=nrow(omega.df)-1-4 #Start with n observations, estimate mu, estimate 4 alpha values
+Fstat=(SSM/dfmod)/(SSE/dfred)
+Fstat
+#When H0 is true, how rare would it be to get an Fstat of 5.6?
+M<-5000
+stats.df<-data.frame(trial=seq(1,M),stat=NA)
+for(j in 1:M){
+  omega.df$shuffled.cat<-sample(omega.df$fishcat)
+  shuff.lm<-lm(omegaper~shuffled.cat,data=omega.df)
+  SSE.shuf<-sum((omega.df$omegaper-shuff.lm$fitted.values)^2)
+  SSM.shuf<-SST-SSE.shuf
+  stats.df[j,]$stat<-(SSM.shuf/dfmod)/(SSE.shuf/dfred)
+}
+stats.df %>% filter(stat>Fstat)%>%summarise(perc=n()/M)
+```
+Assuming validity conditions are met, the f stat also has a convenient distribution, an F distribution.  The F distribution has two parameters, one that is degrees of freedom for model, the other is degrees of freedom for error
+
+We can then calculate:
+
+```{r}
+1-pf(Fstat,dfmod,dfred) #pretty darn close to our simulation
+```
+Let's look at page 91 of our text, are the validity conditions met? 
+
+We could also do:
+
+```{r}
+#Note we can also do:
+anova(omega.lm)
+```
+
+
+
