@@ -1,0 +1,127 @@
+---
+title: "Lesson 7"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Admin
+
+
+Putting it all together.
+
+A British study (North, Shilcock, Hargreaves, 2003) examined whether the type of background music playing in a restaurant ffected the amount of money that diners spent on their meals.  The researchers asked a restaurant to alternate silence, popular music, and classical music on successive nights over 18 days.  Each type of music was played for six nights. 
+
+What are the researchers research question?
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+music.dat<-read.csv("Music.csv")
+music.dat %>% ggplot(aes(x=MusicType,y=Amount))+geom_boxplot()
+```
+
+Can we make a conclusion about the research question based on this plot?
+
+\vspace{.4in}
+
+What is our sources of variation diagram?
+
+\vspace{1.in}
+
+What is our statistical model?
+
+\vspace{1.in}
+
+What is an appropriate statistic to use?
+
+\vspace{1.in}
+
+Are our validity conditions met?
+
+\vspace{.5in}
+
+Assuming yes, what is the distribution of our F Statistic?
+
+\vspace{.5in}
+
+What are our conclusions?  Do they help the restaurant?
+
+\vspace{.5in}
+
+Perhaps we want to say something more.  In this case we might want to conduct a \textbf{Post Hoc Test}.  Note that this is only permissible IF our F statistic is statistically significant.  Why?
+
+\vspace{.3in}
+
+Our book forms the pairwise difference using the formula \textit{difference in means}$\pm$(multiplier)(SE residuals x $\sqrt{1/n_1+1/n_2}$).  It is obvious what $n_1$ and $n_2$ are, SE residuals is our estimate of $\sigma$ that is found from SSE/df  where df = $n-1-(groups-1)=n-groups$.  This can be found in the Residual standard error line of our lm output
+
+```{r}
+contrasts(music.dat$MusicType)=contr.sum
+music.lm<-lm(Amount~MusicType,data=music.dat)
+summary(music.lm)
+```
+So here SE residual is 2.85
+
+Our book then forms each of the pairwise differences.  The multiplier is roughly 2 for a 95 \% CI (How do I know this?)
+
+This method is not generally the best though because our overall Type I error rate, or the experiment (or family wise) Type I error rate will not be $\alpha=.05$.  Each individual confidence interval will be 95 \% meaning if there's a 5 percent chance I've made an error for each contrast and I do 3 contrasts the overall probability I've made an error is:
+
+\vspace{.3in}
+
+There's other methods such as Bonferronni corrections you might have heard about (or might here about) but R has a built in way to correct that changes the multiplier above.  This method is called Tukey's Honest Significant Difference or TukeyHSD.  It's a bit weird, but what we have to do is:
+
+```{r}
+aov.obj<-aov(music.lm)
+TukeyHSD(aov.obj)
+```
+From here we can make a letters table:
+
+
+\vspace{.5in}
+
+We can also find CIs for each individual mean.  This can be done in R but we have to be very very careful.
+
+```{r}
+contrasts(music.dat$MusicType)=contr.sum
+music.lm<-lm(Amount~MusicType,data=music.dat)
+confint(music.lm)
+music.lm2<-lm(Amount~0+MusicType,data=music.dat)
+confint(music.lm2)
+```
+
+In terms of our parameters,  what is going on here?  What one is right?
+
+\vspace{.5in}
+
+To check we can again use the formula for our book $\bar{y_i }\pm \frac{\hat{\sigma}}{\sqrt{n_i}}$.  
+
+\vspace{.5in}
+
+What, in this formula, changes as $i$ gets bigger?
+
+\vspace{.3in}
+
+In terms of our statistical model a confidence interval for the mean is a confidence interval for what?
+
+\vspace{.3in}
+
+A prediction interval would be an interval for what?
+
+\vspace{.3in}
+
+So if we want to form a prediction interval for a new observation can we use $\bar{y_i }\pm \frac{\hat{\sigma}}{\sqrt{n_i}}$?
+
+\vspace{.3in}
+
+Where is our uncertainty coming from if we are making a prediction?
+
+
+\vspace{.5in}
+
+What can we tell our restauranteer?  If they play classical music give a prediction for tip they will receive.  
+
+\vspace{.5in}
+
+Note the validity conditions on page 110 for prediction intervals.  Even if our validity conditions are met for using the F-test we might not meet the validity conditions for prediction intervals.  Why?

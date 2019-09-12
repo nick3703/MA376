@@ -120,8 +120,8 @@ for(j in 1:M){
 
 #So if labels don't matter we get R2 values such as:
 
-#stats.df %>% ggplot(aes(x=stat))+geom_histogram()+
-#  geom_vline(xintercept=SSM/SST,color="red",lwd=2)
+stats.df %>% ggplot(aes(x=stat))+geom_histogram()+
+  geom_vline(xintercept=SSM/SST,color="red",lwd=2)
 
 stats.df %>% filter(stat>SSM/SST)%>%summarise(perc=n()/M)
 ```
