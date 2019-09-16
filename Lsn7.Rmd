@@ -21,6 +21,10 @@ What are the researchers research question?
 library(tidyverse)
 music.dat<-read.csv("Music.csv")
 music.dat %>% ggplot(aes(x=MusicType,y=Amount))+geom_boxplot()
+
+classical<-music.dat%>% filter(MusicType=="Classical")
+qqnorm(classical$Amount)
+qqline(classical$Amount)
 ```
 
 Can we make a conclusion about the research question based on this plot?
@@ -49,7 +53,13 @@ Assuming yes, what is the distribution of our F Statistic?
 
 What are our conclusions?  Do they help the restaurant?
 
-\vspace{.5in}
+```{r}
+contrasts(music.dat$MusicType)=contr.treatment
+lm.mod<-lm(Amount~MusicType,data=music.dat)
+anova(lm.mod)
+```
+
+
 
 Perhaps we want to say something more.  In this case we might want to conduct a \textbf{Post Hoc Test}.  Note that this is only permissible IF our F statistic is statistically significant.  Why?
 
@@ -65,6 +75,15 @@ summary(music.lm)
 So here SE residual is 2.85
 
 Our book then forms each of the pairwise differences.  The multiplier is roughly 2 for a 95 \% CI (How do I know this?)
+
+```{r}
+music.dat%>%group_by(MusicType)%>%summarise(avg=mean(Amount),num=n())
+
+(24.9-21.7)+2.7*2.85*sqrt(1/142+1/131)
+
+(24.9-21.7)-2.7*2.85*sqrt(1/142+1/131)
+```
+
 
 This method is not generally the best though because our overall Type I error rate, or the experiment (or family wise) Type I error rate will not be $\alpha=.05$.  Each individual confidence interval will be 95 \% meaning if there's a 5 percent chance I've made an error for each contrast and I do 3 contrasts the overall probability I've made an error is:
 
