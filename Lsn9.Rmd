@@ -1,0 +1,109 @@
+---
+title: "Lsn 9"
+author: "Clark"
+date: "September 16, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Awhile back I was asked to consult on a project with DPE examining the surface that the sled pull was conducted on.  They wanted to demonstrate that there was an effect due to the surface.  They took 25 volunteers and had them do the sled pull on both grass and sand.
+
+Their sources of variation diagram was:
+
+\vspace{1.5in}
+
+
+The model this used is:
+
+\vspace{1.in}
+
+Their statistical question was:
+
+\vspace{1.in}
+
+
+The data was fit using:
+
+```{r}
+ACFT=read.csv("ACFT.csv")
+ACFT<-ACFT %>% mutate(Participantf=as.factor(Participant))
+GrassSand=ACFT %>% filter(Surface %in%c("G","S", "S "))%>%droplevels()
+levels(GrassSand$Surface)<-c("G","S","S")
+contrasts(GrassSand$Surface)=contr.sum
+lm.mod<-lm(Sled~Surface,data=GrassSand)
+summary(lm.mod)
+anova(lm.mod)
+```
+
+\vspace{.5in}
+
+What is our conclusion?
+
+\vspace{.5in}
+
+```{r}
+
+GrassSand %>% ggplot(aes(x=Sled,y=Surface,group=Participantf,col=Surface))+
+  geom_point(size=2)+geom_line(col="black")
+```
+
+What can we learn by looking at this plot?
+
+\vspace{.5in}
+
+Let's modify our sources of variation diagram, from our plot what is a major source of variability that is not accounted for?:
+
+\vspace{1.5in}
+
+Let's write out a new statistical model:
+
+\vspace{1.in}
+
+Does our hypothesis we are testing change?
+
+\vspace{.5in}
+
+Now we have two ways to approach this statistical question,  if we look at within subject, what happens if we take the difference of our two observations?
+
+\vspace{.5in}
+
+These differences are typically analyzed using a paired t-test.  Now instead of our observations we are looking at our differences.  
+
+```{r}
+
+diff.dat<-GrassSand %>% group_by(Participantf)%>%summarize(diff=diff(Sled))%>%
+  select(diff)
+```
+
+Then we can just do a standard one sample T-test to see if the difference is indeed zero.
+
+```{r}
+n=nrow(diff.dat)
+y.vals=diff.dat$diff
+t.stat=mean(y.vals)/(sd(y.vals)/sqrt(n))
+p.val=2*pt(-3.966,n-1)
+p.val
+```
+
+Which you can do in R using `t.test`.  The second way to analyze the data (which will be more helpful for this class) is to continue in an ANOVA framework:
+
+```{r}
+contrasts(GrassSand$Participantf)=contr.sum
+lm.mod<-lm(Sled~Surface,data=GrassSand)
+anova(lm.mod)
+
+full.lm.mod<-lm(Sled~Surface+Participantf,data=GrassSand)
+anova(full.lm.mod)
+```
+
+In the ANOVA table we see that by adding a second factor (participants) what we actully have done is taken some of our unexplained variation (residuals) and now explained it through participant.  This makes the F statistic for Surface bigger because we are no longer comparing 103.392 to 55.56, but rather 13.392 to 6.57.  Note other things that happen:
+
+\vspace{1.in}
+
+We won't take the time to prove it in this class, but the $SSA \approx I\sum_{j=1}^J \hat{\alpha}_j^2$.  Likewise $SSB \approx J\sum \sum_{i=1}^I \hat{\beta}_i^2$  
