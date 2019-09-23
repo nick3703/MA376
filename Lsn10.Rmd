@@ -1,0 +1,163 @@
+---
+title: "Lsn 10"
+author: "Clark"
+date: "September 16, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Awhile back I was asked to consult on a project with DPE examining the surface that the sled pull was conducted on.  They wanted to demonstrate that there was an effect due to the surface.  They took 25 volunteers and had them do the sled pull on grass, turf, and sand.
+
+Their sources of variation diagram was:
+
+\vspace{1.5in}
+
+Consider the following output
+```{r}
+ACFT=read.csv("ACFT.csv")
+ACFT<-ACFT %>% mutate(Participantf=as.factor(Participant))
+levels(ACFT$Surface)<-c("G","S","S","T")
+contrasts(ACFT$Surface)=contr.sum
+ACFT %>% group_by(Surface)%>%summarise(n=n(),mean=mean(Event),sd=sd(Event))
+```
+Calculate the observed effects for each method
+
+\vspace{.5in}
+
+Consider the ANOVA table
+```{r}
+single.lm<-lm(Event~Surface,data=ACFT)
+anova(single.lm)
+```
+How much variation is explained by Surface?  What does the p-value tell us?
+
+\vspace{.5in}
+
+What source of variation are we not considering?
+
+\vspace{.3in}
+
+Based on the output below, does participant seem to matter?
+
+```{r}
+ACFT %>% group_by(Participantf)%>%summarise(n=n(),mean=mean(Event),sd=sd(Event))
+```
+
+Why is this a blocked study design?
+
+\vspace{.5in}
+
+The statistical model we should be analyzing is:
+
+\vspace{.5in}
+
+
+```{r}
+M<-5000
+stats.df<-data.frame(trial=seq(1,M),stat=NA)
+ACFT.mod<-ACFT
+for(j in 1:M){
+  ACFT.mod$shuffled.cat<-sample(ACFT$Surface)
+  shuff.lm<-lm(Event~shuffled.cat,data=ACFT.mod)
+  stats.df[j,]$stat<-anova(shuff.lm)$"F value"[1]
+}
+```
+
+What is the mean/sd of our shuffled null distribution?
+
+\vspace{.5in}
+
+Our P value can be found by:
+
+```{r}
+stats.df %>% filter(stat>3.1123)%>% summarise(pval=n()/M)
+```
+
+But we still want to know whether, after adjusting for participant, the variability is statistically significant:
+
+```{r}
+M<-5000
+stats.df<-data.frame(trial=seq(1,M),stat=NA)
+ACFT.mod<-ACFT
+for(j in 1:M){
+  ACFT.mod <- ACFT.mod %>% group_by(Participantf)%>%sample_n(3)
+  ACFT.mod$shuffled.cat <- rep(c("S","T","G"),25)
+  shuff.lm<-lm(Event~shuffled.cat,data=ACFT.mod)
+  stats.df[j,]$stat<-anova(shuff.lm)$"F value"[1]
+}
+```
+
+Let's talk about what I'm doing here.
+
+What happens to the mean/sd of our F distribution?
+
+How rare is our F value now?
+
+\vspace{.4in}
+
+What is our conclusion?
+
+\vspace{.4in}
+
+Let's find Participant (block) effect for a few of our participants
+
+```{r}
+effects=ACFT %>% group_by(Participantf)%>%summarise(effect=mean(Event)-mean(ACFT$Event))
+```
+Note that we have imposed a sum to zero constraint
+
+```{r}
+sum(effects$effect)
+```
+
+We can come up with an adjusted surface effect by:
+
+```{r}
+adj.effect=ACFT %>% mutate(person.means=rep(effects$effect,3)) %>%
+  mutate(adj.effect=Event-person.means)
+```
+
+Let's compare the block-adjusted values to the original values, how does the variation compare?
+
+```{r}
+var(adj.effect$adj.effect)
+var(ACFT$Event)
+```
+
+Does the group means change?
+
+```{r}
+adj.effect %>% group_by(Surface) %>% summarise(means=mean(adj.effect),sd=sd(adj.effect))
+```
+
+Our block-adjusted F-statistic is:
+
+```{r}
+adj.mod<-lm(Event ~ Surface+Participantf,data=adj.effect)
+anova(adj.mod)
+```
+
+To simulate the F statistic we can do:
+
+
+```{r}
+M<-5000
+stats.df<-data.frame(trial=seq(1,M),stat=NA)
+ACFT.mod<-adj.effect
+for(j in 1:M){
+  ACFT.mod$shuffled.cat<-sample(ACFT$Surface)
+  shuff.lm<-lm(adj.effect~shuffled.cat+Participantf,data=ACFT.mod)
+  stats.df[j,]$stat<-anova(shuff.lm)$"F value"[1]
+}
+```
+
+
+Are validity conditions met for using F-distribution for our F statistic in this study?
+
+Why/why not?
