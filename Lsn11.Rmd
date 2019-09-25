@@ -1,0 +1,121 @@
+---
+title: "Lesson 11"
+author: "Clark"
+date: "September 25, 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Recall that earlier in the course we discussed covariance, which is
+
+\vspace{.5in}
+
+In today's lesson (which adittedly is a bit dense) we are going to go through how covariance can make life difficult and impact our analysis of variance model.
+
+The primary research quesiton we are going to explore si whether wages for blacks differ significantly fromw ages for non-boacks focusing on males who went to college and males who did not go to college.
+
+The initial statistical model we consider is:
+
+\vspace{1.in}
+
+We can find the group means by:
+
+```{r}
+dat<-read.table("http://www.isi-stats.com/isi2/data/WageSubset.txt",header=T)
+dat %>% group_by(race)%>%summarise(avg=mean(wage.100))
+mean(dat$wage.100)
+```
+
+Note here that the overall mean is a lot closer to nonblack than it is to black.  Why?
+
+\vspace{.4in}
+
+Therefore we might not want $\mu$ in our model to represent the overall average, but rather the average of the group averages, or $(4.52+6.21)/2$.  In R this is done when we fix our contrasts as contr.sum
+```{r}
+dat<-read.table("http://www.isi-stats.com/isi2/data/WageSubset.txt",header=T)
+contrasts(dat$race)=contr.sum
+contrasts(dat$education)=contr.sum
+anova_model2<-lm(wage.100~race,data=dat)
+full.bets<-anova_model2$coefficients
+full.bets
+```
+
+Again $\mu$ is NOT the population average, but the \textbf{effect average}.
+
+Looking at page 175 obviously we might want to explain some of the unexplained variation using college as a factor.  The real issue becomes this:
+
+```{r}
+dat %>% group_by(race,education)%>%summarise(num.obs=n())
+```
+
+So let's do what we did before while ignoring the fact that our samples are unequal.
+```{r}
+
+dat<-read.table("http://www.isi-stats.com/isi2/data/WageSubset.txt",header=T)
+dat %>% group_by(education)%>%summarise(avg=mean(wage.100))
+```
+
+Therefore the  means of the means is 7.477 and the effect of education is $\pm 2.181$.  So perhaps we are tempted to our adjusted statistical model as:
+
+
+\vspace{.5in}
+
+
+Which we could then analyze via:
+
+```{r}
+dat.adj = dat %>% mutate(adj.val=ifelse(education=="belowCollege",wage.100+2.181,wage.100-2.181))
+
+adj.mod<-lm(adj.val~race,data=dat.adj)
+
+anova(adj.mod)
+```
+
+Which seems like it should work, right?  This is just what we were doing before, what's the problem?
+
+\vspace{1.in}
+
+This is, in essence, covariance.  When we subtract off the "College effect" we are also subtracting off some part of the education effect.  Why?
+
+\vspace{1.in}
+
+In the parlance of ANOVA, up to this point we have been calculating what are called "Type I Sums of Squares".  These are done sequentally.  We first find the Sums of Squares due to factor A and then find the Sums of Squares due to factor B given than factor A is in the model.  We can see this because if we run:
+
+```{r}
+forward<-lm(wage.100~race+education,data=dat)
+anova(forward)
+```
+
+
+```{r}
+backward<-lm(wage.100~education+race,data=dat)
+anova(backward)
+```
+
+Our Sums of Squares change.  \textbf{This is because the only time we are doing "Conditional Sums of Squares" is when our variable is the second variable in the model}
+
+To further see that education and race are covariated, we note that by knowing someone's education we have information on race.  Further, by knowing education we have information on wage. 
+
+
+\vspace{.5in}
+
+To reflect covariance in our model we draw our diagram like:
+
+\vspace{1.5in}
+
+Note that our statistical model doesn't change, but to fit this in R we need the `library(car)` installed and we can run:
+```{r}
+library(car)
+contrasts(dat$race)=contr.sum
+contrasts(dat$education)=contr.sum
+anova_model2<-lm(wage.100~education+race,data=dat)
+anova.table<-Anova(anova_model2,type=2)
+anova.table
+```
+
+An interesting note here is that the sums of squares no longer equal the total sums of squares.  The extra sums of squares can be thought of as variation that cannot be disentangled from education or race.  Our book calls this SScovariation, which I rather like.  It's variability that still exists but we cannot attribute to either factor so we basically shrug our shoulders.
+
+
