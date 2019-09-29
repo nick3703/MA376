@@ -1,0 +1,159 @@
+---
+title: "Lesson 6"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Admin
+
+What types of designs did we discuss in Chapter 2?
+
+\vspace{.5in}
+
+When would we want to block in a design?
+
+\vspace{.5in}
+
+In this chapter we're going to dive more into some design structures starting with what are sometimes called full factorial designs.  
+
+Our book talks about a study on corporate credibility where researchers recruited 160 female college students and gave them a pamphlet containing background information (positive or negative) on a fictional show company.  Each student was then shown a celebrity endorsement for one of the products and asked to rate her attitude towards the brand as well as her purchase intent.
+
+Consider the design structure where we randomly assign 80 participants to the company with positive literature and Flo Jo and 80 participants to the company with negative literature and Roseanne.
+
+Is this a good design structure?
+
+\vspace{.5in}
+
+What if we split our population into two groups.  One group will focus on positive or negative credibility and the other group will focus on Roseanne and Flo Jo.  Is this a good design structure?
+
+\vspace{.5in}
+
+Note the difference between factors and treatments.
+
+\vspace{.5in}
+
+How many treatments do we have?  How many factors?
+
+\vspace{.5in}
+
+What is the minimum number of participants we would need in order to conduct this experiment?
+
+\vspace{.5in}
+
+If we want a balanced design, how many of our 160 participants should we assign to each treatment?
+
+\vspace{.5in}
+
+Sources of Variation diagram:
+
+\vspace{1.in}
+
+Statistical Model:
+
+\vspace{1.in}
+
+Sometimes this sort of design is depicted as:
+
+\vspace{1.in}
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+dat<-read.table("http://www.isi-stats.com/isi2/data/CorporateCredibility.txt",header=T)
+```
+
+What does this show us?
+
+```{r}
+dat %>% group_by(Treatments)%>%summarise(Mean=mean(PI),SD=sd(PI))
+```
+
+From our statistical model, what hypothesis are we interested in?
+
+\vspace{1.in}
+
+Does this help?
+
+```{r}
+cell.means<-lm(PI~Treatments,data=dat)
+anova(cell.means)
+```
+What hypothesis is this testing?
+
+\vspace{.5in}
+```{r}
+TukeyHSD(aov(PI~Treatments,data=dat))
+```
+
+Perhaps not what we want.
+
+Our book states that the balanced study design has insured there is no confouding between credibility and endorser.  Why is this statment true?
+
+\vspace{.5in}
+
+What we want to fit:
+
+```{r}
+contrasts(dat$Endorser)=contr.sum
+contrasts(dat$CorpCred)=contr.sum
+effects.mod<-lm(PI~Endorser+CorpCred,data=dat)
+coef(effects.mod)
+levels(dat$Endorser)
+levels(dat$CorpCred)
+```
+
+Going back to the picture of our design:
+
+\vspace{1.in}
+
+Sums of squares due to endorser:
+
+\vspace{1.in}
+
+Which, another way is:
+
+```{r}
+1.3125^2*nrow(dat)
+1.4875^2*nrow(dat)
+```
+How many degrees of freedom are due to each of the factors?
+
+Our Sums of Square total are:
+```{r}
+sum((dat$PI-mean(dat$PI))^2)
+```
+So, by hand, we can fill out our ANOVA table:
+
+\vspace{1.in}
+
+Assuming our validity conditions are met, both of our F statistics have what distribution?
+
+\vspace{.5in}
+
+So we can check:
+
+```{r}
+1-pf(17.83,1,157)
+```
+
+Of course we can also do `anova(effects.mod)` to get the table.
+
+Therefore our fitted model is:
+
+\vspace{.5in}
+
+To find each of the residuals, we would calculate:
+
+\vspace{.5in}
+
+In R we can do:
+```{r}
+dat.fitted <-dat %>%mutate(resid=PI-effects.mod$fitted.values)
+```
+
+Plot the residuals vs. fitted and histogram of the residuals.  Why?
+
+\vspace{.5in}
