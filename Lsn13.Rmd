@@ -1,0 +1,145 @@
+---
+title: "Lsn 13"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Pistachios imported form the Middle East are cleaned and bleached with peroxide to turn them white.  Some governments have banned bleaching over concerns of health risks; others have explored the impact on the health benefits of pistachios.  Researchers wanted to investigate the effects of the air felocity of the fan and the drying temeprature of the oven on the amount of  peroxide which reamins on the pistachios after teh bleach process.  Two values of air velocity and two values of drying temperature were investigated.  A full factorial design was conducted such that five batches, each consisting of 24 ounces of nuts, were randomly assigned to each treatment.
+
+
+How many treatments do we have?
+
+\vspace{.5in}
+
+How would the randomization be conducted?
+
+\vspace{.5in}
+
+Sources of variation diagram:
+
+\vspace{1.in}
+
+Statistical model:
+
+\vspace{1.in}
+
+```{r}
+pistachio = read.table("http://www.isi-stats.com/isi2/data/pistachioStudySubset.txt",header=T)
+```
+
+Here we're going to treat temperature and air velocity as factors not as continuous random variables.  What's the downside of this?
+
+\vspace{.5in}
+
+```{r}
+pistachio.fac<-pistachio %>% mutate(Temperaturef=as.factor(Temperature),AirVelocityf=as.factor(AirVelocity))
+contrasts(pistachio.fac$Temperaturef)=contr.sum
+contrasts(pistachio.fac$AirVelocityf)=contr.sum
+full.lm<-lm(Peroxide ~ Temperaturef+AirVelocityf,data=pistachio.fac)
+coef(full.lm)
+
+```
+
+The fitted model is:
+
+\vspace{1.in}
+
+So according to the model, the best combination is:
+
+\vspace{1.in}
+
+```{r}
+gr.means=pistachio.fac%>%group_by(Temperaturef,AirVelocityf)%>%summarize(mean.perox=mean(Peroxide))
+gr.means
+```
+
+Hmmm....
+
+```{r,eval=FALSE}
+gr.means %>% ggplot(aes(x=Temperaturef,y=mean.perox,color=AirVelocityf))+
+  geom_line(aes(group=AirVelocityf))+geom_point()
+```
+
+This is evidence of a \textbf{Statistical Interaction}.  An interaction means that the effect is modified by the presence of another variable.  In our experiment, if the temperature is 60, then it'd be more advantageous to have an air velocity of 2.5, but if the temperature is 90, then it'd be more advantageous to have an air velocity of 1.5.
+
+Note that we are \textbf{not} saying that Air Velocity and Temperature are confounders.  If we know the air velocity do we gain any knowledge of the temperature?
+
+\vspace{.5in}
+
+Our sources of variation diagram could now be:
+
+\vspace{1.in}
+
+Our statistical model is:
+
+\vspace{1.in}
+
+Our null and alternative for testing interaction is:
+
+\vspace{.5in}
+
+An appropriate statistic might be the difference of the differences, here we get:
+
+```{r}
+(gr.means$mean.perox[1]-gr.means$mean.perox[2])-(gr.means$mean.perox[3]-gr.means$mean.perox[4])
+```
+
+To see if this statistic is significant, as before, we need to know what the distribution under $H_0$ is, so we could do:
+
+```{r}
+
+M=1000
+stats.df=data.frame(rep=seq(1,M),stat=NA)
+for(i in 1:M){
+  pistachio.shuf=pistachio.fac
+  pistachio.shuf$Tempshuf=sample(pistachio.shuf$Temperaturef)
+  pistachio.shuf$Airshuf=sample(pistachio.shuf$AirVelocityf)
+  gr.shuf=pistachio.shuf%>%group_by(Tempshuf,Airshuf)%>%
+    summarize(mean.perox=mean(Peroxide))
+  stats.df[i,]$stat=(gr.shuf$mean.perox[1]-gr.shuf$mean.perox[2])-
+    (gr.shuf$mean.perox[3]-gr.shuf$mean.perox[4])
+}
+```
+So under $H_0$ how rare would it be to observe a 3.24?
+
+```{r}
+stats.df %>% filter(abs(stat)>3.24)%>%summarise(pval=n()/M)
+```
+
+Estimating interaciton effects might seem a bit tricky.  In R we fit:
+
+```{r}
+interact.lm<-lm(Peroxide ~ Temperaturef+AirVelocityf+Temperaturef:AirVelocityf,data=pistachio.fac)
+coef(interact.lm)
+```
+
+Figuring out which combination gets a positive .8095 and which gets a -.8095 can be straight forward if we recall that $\alpha_1= - \alpha_2$ and $\beta_1=-\beta_2$.  
+
+\vspace{.5in}
+
+Our ANOVA goes from
+
+```{r}
+anova(full.lm)
+```
+to
+```{r}
+anova(interact.lm)
+```
+
+See what happens to the Residuals.  
+
+Post Hoc tests can them proceed.
+
+```{r}
+TukeyHSD(aov(Peroxide ~ Temperaturef*AirVelocityf,data=pistachio.fac))
+#Note * gives all main effects and interactions
+```
+
