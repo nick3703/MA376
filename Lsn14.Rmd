@@ -1,0 +1,119 @@
+---
+title: "Lsn 14"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Our text discusses a study in Vitamin C levels using 3 brands and 2 temperatures.  There are six glasses of orange juice in their study.  Here the data is:
+
+```{r}
+OJ1 <- read.table("http://www.isi-stats.com/isi2/data/OJ-n6.txt",header=T)
+OJ1
+```
+They look at the data:
+```{r,eval=FALSE}
+OJ1 %>% ggplot(aes(x=Brand,y=VitC,color=Temp))+
+  geom_line(aes(group=Temp))+geom_point()
+```
+
+
+Since they just had MA376 they decide to fit this model:
+
+\vspace{1.in}
+
+```{r}
+contrasts(OJ1$Brand)=contr.sum
+contrasts(OJ1$Temp)=contr.sum
+OJ.lm<-lm(VitC~Brand*Temp,data=OJ1)
+coef(OJ.lm)
+levels(OJ1$Brand)
+levels(OJ1$Temp)
+```
+
+So their fitted model is:
+
+\vspace{1.in}
+
+```{r}
+anova(OJ.lm)
+```
+
+
+What's going on?
+
+\vspace{1.in}
+
+Remember that any statistical test or confidence interval relies on being able to compute a variance.
+
+```{r}
+OJ1 %>% group_by(Brand,Temp)%>%summarize(Mean=mean(VitC),Sd=sd(VitC))
+```
+Without replication we CANNOT compute a variance so we cannot do any statistical tests.  Our book calls a blocked design with replication a \textbf{generalized block design}.  A picture:
+
+\vspace{1.in}
+
+A quick way to see if we can fit a model is to do a degrees of freedom calculation.
+
+\vspace{1.in}
+
+If we didn't have replication, what models could we fit:
+
+\vspace{1.5in}
+
+
+Note how we can continue to expand this as we get more replication.  Let's say we are also interested in Water PH.  How many treatments do we have if we consider brand as a blocking variable (not a treatment).  So, within each block we could run a $2 \times 2$ factorial design.  Again a picture:
+
+\vspace{1.in}
+
+How many glasses of orange juice would we need in our study?
+
+\vspace{1.in}
+
+If we have 12 glasses of orange juice what would could our  model be?
+
+\vspace{1.in}
+
+Our ANOVA table would be:
+
+\vspace{1.5in}
+
+What would happen if we include an interaction between water, brand, and temperature?
+
+\vspace{1.in}
+
+Say we want to include all interactions, our model would become:
+
+\vspace{1.in}
+
+
+```{r}
+OJ3=read.table("http://www.isi-stats.com/isi2/data/OJ-n24.txt",header=T)
+
+full.lm<-lm(VitC1000~Brand*Temp*Water,data=OJ3)
+anova(full.lm)
+```
+
+3 Way interaction...  The interaction between temperature and water depends on brand. (Figure 3.3.10)
+
+```{r,eval=FALSE}
+
+OJ3 %>% ggplot(aes(x=Temp,y=predict(full.lm),color=Water))+
+  geom_line(aes(group=Water))+geom_point() + 
+  facet_wrap(vars(Brand))
+```
+What happens if we don't add 3 way
+
+```{r}
+OJ3=read.table("http://www.isi-stats.com/isi2/data/OJ-n24.txt",header=T)
+mod.lm<-lm(VitC1000~Brand+Temp+Water+Brand:Temp+Water:Brand+Water:Temp,data=OJ3)
+anova(mod.lm)
+```
+
+Our test is more powerful if we don't consider everything.  Couple of thoughts.  Some folks believe that we shouldn't interact blocks with our treatments.  Let's read through pg. 249
