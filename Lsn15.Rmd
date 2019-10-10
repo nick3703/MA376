@@ -1,0 +1,66 @@
+---
+title: "Lsn 15"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Let's reconsider the Salary Discrimination dataset
+
+
+```{r}
+salary.dat<-read.table("http://www.isi-stats.com/isi2/data/Wages.txt",header=T)
+```
+
+Instead of looking at College educated vs not college educated, we now consider the full dataset.
+
+```{r}
+levels(salary.dat$educ)
+gr.means=salary.dat%>%group_by(educ,race)%>%summarize(mean.salary=mean(wage))
+
+```
+
+What do we see?
+
+```{r}
+gr.means$educ<-factor(gr.means$educ,levels=c("belowHS","HS","college","beyondCollege"))
+gr.means %>% ggplot(aes(x=educ,y=mean.salary,color=race))+
+  geom_line(aes(group=race),lwd=2)+geom_point()
+```
+
+\newpage
+A statistical model:
+
+\vspace{2.in}
+
+ANOVA table:
+
+\vspace{1.5in}
+
+To fit the model we use:
+
+```{r}
+contrasts(salary.dat$race)=contr.sum
+contrasts(salary.dat$educ)=contr.sum
+inter.lm<-lm(wage~race*educ,data=salary.dat)
+coef(inter.lm)
+```
+Getting the fits is a bit of a pain but we can do it:
+
+\vspace{2.in}
+
+To fit the ANOVA model we note that we are now interested in Type III Sums of squares.
+
+
+```{r}
+library(car)
+Anova(inter.lm,type=3)
+```
+
+What does this mean?
