@@ -1,0 +1,132 @@
+---
+title: "Lsn 16"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Up to this point we have been using statistical models of the form:
+
+\vspace{1.in}
+
+Key to this has been the assumption that our explanatory variable, or independent variable, is categorical.  This was nice in that we could think of each of our observations as coming from a group with seperate means.  For instance we can think of $H_0$ and $H_a$ from above as:
+
+\vspace{1.in}
+
+However, in some studies our explained variation comes from a variable that has a natural ordering to it.  In fact we've seen this a bit already (recall Pistachio study).  
+
+Grape Seeds:  
+
+Note here our researchers are interested in explaining the variation in the amount of proanthocyanidin (PC) in a grape seed and the sources of the explained variation might be thought of as the percentage of ethanol.
+
+```{r}
+grape<-read.table("http://www.isi-stats.com/isi2/data/Polyphenols.txt",header=T)
+grape <- grape %>% mutate(Ethanol=Ethanol.) %>% select(-Ethanol.)
+grape <- grape %>% mutate(Time.hrs=Time.hrs.)%>% select(-Time.hrs.)
+```
+
+Note that the null model here is:
+
+\vspace{1.in}
+
+Which can be fit as:
+```{r}
+null.lm<-lm(PC~1,data=grape)
+summary(null.lm)
+```
+
+Perhaps we fit a seperate means model:
+
+\vspace{1.in}
+
+Which is done through:
+
+```{r}
+sep.means<-lm(PC~0+as.factor(Ethanol),data=grape)
+summary(sep.means)
+```
+Is this better?  Well, perhaps.  To test this we can run:
+
+```{r}
+grape<-grape %>% mutate(Ethanolf=as.factor(Ethanol))
+contrasts(grape$Ethanolf)<-contr.sum
+effects.mod<-lm(PC~Ethanolf,data=grape)
+anova(effects.mod)
+```
+
+\vspace{1.in}
+
+```{r}
+gr.means <- grape %>% group_by(Ethanolf)%>%summarize(means=mean(PC))%>%
+  mutate(Ethanol=as.numeric(as.character(Ethanolf)))
+grape %>% ggplot(aes(x=Ethanol,y=PC))+geom_point()+geom_point(aes(x=Ethanol,y=means),color="red",size=4,data=gr.means)
+```
+
+If our means have a linear relationship, perhaps our model could be:
+
+\vspace{1.in}
+
+Which is of course the model for a regression.  Note that this is the statistical model.  The fitted model or the predicted model is:
+
+\vspace{1.in}
+
+Our book uses $b_0$ and $b_1$ instead of $\hat{\beta}_0$ and $\hat{\beta}_1$.  I prefer the hats, but use what you'd like.
+
+To fit this model we simply run:
+
+```{r}
+reg.lm<-lm(PC~Ethanol,data=grape)
+summary(reg.lm)
+```
+
+Note that we obtain $\hat{\beta}$ through the method of least squares:
+
+\vspace{1.in}
+
+The interpretation of $\hat{\beta}_0$ and $\hat{\beta_1}$ are:
+
+One often overlooked aspect of using regression vs ANOVA is that the linear regression model is actually more restrictive than the seperate means model:
+
+```{r}
+anova(reg.lm)
+```
+
+Note that the sums of squares are higher under this model.  Why?
+
+\vspace{.5in}
+
+However, the SE of the residuals is smaller.  When we use a regression model vs a seperate means model we are making a tradeoff.  We are actually building a simpler model, but hoping that the additional complexity a multiple means model provides minimal difference in explaining variability.  \textbf{All things being equal we always prefer a simpler model}.  If we have two models that have similar SSError values, choose the model that uses fewer degrees of freedom if you don't have science to save you.
+
+To put this another way, previously if we had $\mu$, $\alpha_1$ and $\alpha_2$ we automatically knew $\alpha_3$ (why?).  Now, if we know one of our means and $\beta_0$ we know all of our other means.
+
+```{r}
+grape %>% ggplot(aes(x=Ethanol,y=PC))+geom_point()+
+  geom_point(aes(x=Ethanol,y=means),color="red",size=4,data=gr.means)+
+  stat_smooth(method="lm", se=FALSE)
+```
+
+In later lessons we'll explore the statistical properties of $\hat{\beta}$ and the linear regression model.  The key point here is that a linear regression model is appropriate if we believe ther is a linear relationship between our explanatory variable and our response.  It isn't always clear whether a seperate means model outperforms a linear regresison model though:
+
+
+```{r}
+grape<-grape %>% mutate(Timef=as.factor(Time.hrs))
+reg.lm<-lm(PC~Time.hrs,data=grape)
+sep.means<-lm(PC~Timef,data=grape)
+```
+
+
+```{r}
+
+gr.means <- grape %>% group_by(Timef)%>%summarize(means=mean(PC))%>%
+  mutate(Time=as.numeric(as.character(Timef)))
+grape %>% ggplot(aes(x=Time.hrs,y=PC))+geom_point()+
+  geom_point(aes(x=Time,y=means),color="red",size=4,data=gr.means)+
+  stat_smooth(method="lm",se=FALSE)
+```
+
