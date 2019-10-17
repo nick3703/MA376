@@ -79,7 +79,7 @@ yhat=reg.lm$fitted.values
 qqnorm(resids)
 qqline(resids)
 #hist(resids)
-#plot(resids,yhat)
+#plot(yhat,resids)
 ```
 
 If our conditions are met, then we can form the standardized statistic, which has distribution:
