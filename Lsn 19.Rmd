@@ -1,0 +1,158 @@
+---
+title: "Lesson 19"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=5,fig.height=3)
+library(tidyverse)
+```
+
+## Admin
+
+Recall last class we built a model with both quantitative and categorical explanatory variables.  If we have two categories we can write our models as:
+
+
+\vspace{1.5in}
+
+For this reason, we can think about these models as having seperate intercepts but the same slope.  For our home prices, what we are saying with our models is that the relationship between square footage and price is the same for both lake front and not lake front houses, but the baseline cost differs.  To put itn another way, if we have two houses, one on the lakefront and one not on the lakefront, the difference between the two prices is always expected to be:
+
+\vspace{.5in}
+
+Therefore, if we took, say a 1500 square foot house on the lakefront and a 1500 square foot house not on the lakefront the expected difference is the same as the difference betweena 3000 square foot house on the lakefront and a 3000 square foot house not on the lakefront.  Let's look at a picture:
+
+```{r}
+house.dat<-read.table("http://www.isi-stats.com/isi2/data/housing.txt",header=T)
+house.dat <- house.dat %>% mutate(price=price.1000)%>%select(-price.1000)%>%
+  group_by(lake)
+house.dat %>% ggplot(aes(x=sqft,y=price,color=lake))+geom_point()+
+  stat_smooth(method="lm",se=FALSE,fullrange=T)
+```
+
+Here we decided to draw seperate regression lines for each group (Note the `group_by` command prior to plotting).  What can we say about the difference of the differences?
+
+\vspace{.5in}
+
+This suggests the possibilities of an interaction model.  We can write the model as:
+
+\vspace{1.in}
+
+In R we fit it as:
+
+```{r}
+contrasts(house.dat$lake)=contr.sum
+inter.lm<-lm(price~sqft+lake+sqft:lake,data=house.dat)
+summary(inter.lm)
+```
+
+Let's use this to write out the fitted model for lakefront:
+
+\vspace{.5in}
+
+Fitted model for not lakefront:
+
+\vspace{.5in}
+
+Note we also can write the model as:
+
+\vspace{1.in}
+
+Which can be fit as:
+
+```{r}
+contrasts(house.dat$lake)=contr.treatment
+inter.lm<-lm(price~sqft+lake+sqft:lake,data=house.dat)
+summary(inter.lm)
+```
+
+Verify that these outcomes yield the same fitted model.
+
+Note that for either output we get an F-statistic of 91.84 on 3 and 9 DF.  This is testing:
+
+\vspace{.5in}
+
+This probably isn't the test we want in this case.  Note that we also have P values associated with sqft, lake2, and sqft:lake2.  These are testing:
+
+\vspace{1.in}
+
+Note that this is very similar to using Type III sums of squares.  Alternatively we can use the F statistic to test the effects using (Note: page 329 is incorrect):
+
+```{r}
+library(car)
+Anova(inter.lm,type=3)
+```
+
+Let's tear this apart a bit.  One question you might have is, if we are doing this analysis and end up with different slopes and different intercepts, why not just split our data into two and fit two different regression models?
+
+Certainly we could do:
+
+```{r}
+lakehouses<-house.dat %>% filter(lake=="lakefront")
+lake.lm<-lm(price~sqft,data=lakehouses)
+summary(lake.lm)
+
+```
+
+Which yields a fitted model of:
+
+\vspace{1.in}
+
+And we could do:
+```{r}
+nonlakehouses<-house.dat %>% filter(lake!="lakefront")
+nonlake.lm<-lm(price~sqft,data=nonlakehouses)
+summary(nonlake.lm)
+
+```
+
+Why might we not want to do this?
+
+\vspace{1.in}
+
+We still need to check our assumptions, what plots would we want to examine?
+
+\vspace{.5in}
+
+Note that our book makes a statement that may get hidden, but it is actually quite powerful and gets misinterpreted quite a bit.  Note that our confidence intervals for our regression coefficients can be found from:
+
+```{r}
+confint(inter.lm)
+```
+
+These intervals are NOT confidence intervals for $\hat{y}$.  Let's look at the regression model we are fitting:
+
+\vspace{.5in}
+
+If we want to find a Confidence Interval for $\hat{y}$ what would need:
+
+\vspace{.3in}
+
+Let's take a 2000 sq. foot house that's not on the lakefront.  In order to find the variance of our prediction we need the variance of $\hat{\beta_0}$, the variance of $\hat{\beta_1}$ and the covariance between these two (recall the variance of a sum is the sum of the covariances).  In R we can get the covariance matrix from `vcov(inter.lm)`.  So we note that the variance here is:
+
+```{r}
+pred.var=5127.43+2700^2*.000801+2*2700*-1.94454
+pred.se=sqrt(pred.var)
+pred.se
+```
+
+ Using matrix algebra we can compute this as:
+
+\vspace{.5in}
+
+For any given observation, we can get the confidence intervals and the SE using:
+
+```{r}
+conf.int=predict(inter.lm,data.frame(sqft=2700,lake="lakefront"),se.fit=TRUE,interval="confidence")
+```
+
+If we want a prediction interval, we need the variance associated with $\hat{y}$ AND the variance associated with $y$, which is $\hat{\sigma^2}$.  So for instance if we want a prediction of a future lakefront house that's 2700, our variance will be `21.62^2+49.48^2`.  So the SE for a prediction will be approx. 54.  Our book makes the claim that to form a 95\% PI we should use $\hat{y} \pm 2* \hat{\sigma^2}$ which fails to account for the uncertainty in $\hat{\beta}$ terms....
+
+To find a prediction interval we can use:
+
+```{r}
+pred.int=predict(inter.lm,data.frame(sqft=2700,lake="lakefront"),se.fit=TRUE,interval="prediction")
+conf.int$fit
+pred.int$fit  
+```
+
