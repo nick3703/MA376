@@ -1,0 +1,143 @@
+---
+title: "Lsn 20"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+## Admin
+
+Diamonds are expensive...  But there's a lot of potential reasons why.  A common way to examine the reasons for diamonds cost is the 4Cs (cut, clarity, color, and carat).  In general, a bigger, more clear, colorless diamond is prefered.  But we can explore this a bit more.
+
+```{r}
+diamonds=read.table("http://www.isi-stats.com/isi2/data/diamonds.txt",header=T)
+diamonds = diamonds %>% mutate(Price=Price..1000s.)%>% select(-Price..1000s.)
+```
+
+Conducting a unifariate analysis we might have:
+
+```{r}
+single.lm<-lm(Price~Carat,data=diamonds)
+summary(single.lm)
+```
+
+Here we see that 38.28^2=1465.4, which makes sense because the F test is comparing:
+
+\vspace{1.in}
+
+Which is the same thing as testing:
+
+\vspace{1.in}
+
+We can do another univariate analysis:
+
+```{r}
+clarity.lm<-lm(Price~Clarity,data=diamonds)
+summary(clarity.lm)
+```
+
+This model is:
+
+\vspace{1.in}
+
+So the F-statistic is conducting the ANOVA test
+```{r}
+anova(clarity.lm)
+```
+
+Which doesn't have the same relationshp with the t statistic before.  Note here we are using indicator coding instead of effects coding which means our intercept is:
+
+\vspace{.5in}
+
+In R we can see the levels using `levels(diamonds$Clarity)`.  If we want to change which category is our reference category we can explicity relevel within R
+
+```{r}
+diamonds$modClarity<-factor(diamonds$Clarity,levels=c("VS1","VS2","VVS1","VVS2","IF"))
+clarity2.lm<-lm(Price~modClarity,data=diamonds)
+summary(clarity2.lm)
+```
+
+Which we can see doesn't change our group estimates, but does change our P values.  Why?
+
+\vspace{.5in}
+
+But what model is better?  Maybe we should use a model with both?
+
+\vspace{1.in}
+
+Which we can fit:
+```{r}
+both.lm<-lm(Price~Carat+Clarity,data=diamonds)
+summary(both.lm)
+```
+
+Certainly our $R^2$ increased, but if we know Carat do we gain anything by knowing Clarity?  To answer this we can look at the ANOVA model:
+
+```{r,warning=FALSE}
+library(car)
+Anova(both.lm,type=3)
+```
+
+Note that our SST is:
+```{r}
+SST=sum((diamonds$Price-mean(diamonds$Price))^2)
+SST
+```
+So, after adjusting for Carat, Clarity explains 46.2/2417.85 or 2\% of the remaining variability whereas after adjusting for clarity, carat explains alost 85\% of the remainng variability. 
+
+The question we want to ask is whether this model is better than the model with only Carat in this.  Why can't we answer this question with the output we obtained in `both.lm`?
+
+\vspace{.5in}
+
+Since we have \textbf{nested models} we can statistically compare the two models.  By nested models I mean:
+
+\vspace{.5in}
+
+Assuming our validity conditions are met, we can form the F statistic:
+
+\vspace{1.in}
+
+In R this is done through:
+
+```{r}
+anova(single.lm,both.lm)
+```
+
+Note for the parital F test we aren't concerned with types of Sums of Squares as we are, by default, conducting a conditional test.
+
+Because the F statistic is statistically significant, our conclusion is that the model with Clarity is prefered.  
+
+But perhaps we want a model that considers the interactions.
+
+\vspace{1.in}
+
+What, in words, does this model say about the relationship between Carat and price?
+
+\vspace{.5in}
+
+We can test if this model is prefered to a model with out interactions by:
+
+```{r}
+inter.lm<-lm(Price~Carat*Clarity,data=diamonds)
+anova(both.lm,inter.lm)
+```
+
+We can get 95\% CI for each of our $\beta$ terms in this model by:
+
+```{r}
+confint(inter.lm)
+```
+
+But, why might we want to adjust these CIs?  One way to adjust is to use what is called Bonferonni Corrections.  This technique uses $\alpha/k$ in lieu of $\alpha$ where $k$ is the number of comparisons or tests being performed.  Here we have 10 Confidence intervals, so Bonferonni corrections would say to use $.05/10=.005$, or in order to guarantee an overall $\alpha=0.05$, we should use 99.5 CI instead of 95 CI.  This can be modified by:
+
+```{r}
+confint(inter.lm,level=0.995)
+```
+
+Interestingly if we use this technique what can we say?  This in general is a very very conservative approach.
+
+Looking at page 348 do we have concerns over our assumptions about $\epsilon_i$?
