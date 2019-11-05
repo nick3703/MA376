@@ -1,0 +1,173 @@
+---
+title: "Lesson 22"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.show="hide")
+library(tidyverse)
+library(GGally)
+```
+
+## Admin
+
+
+Brain size makes you smarter...
+
+```{r}
+brain.dat<-read.table("http://www.isi-stats.com/isi2/data/BrainSize.txt",header=T)
+brain<-brain.dat %>% select(PIQ,Height,BrainSize)
+
+```
+
+The first question asked is how does Brain size impact PIQ ignoring all other possible covariates.  The model is:
+
+\vspace{1.in}
+
+We fit this as:
+
+```{r}
+brain.lm<-lm(PIQ~BrainSize,data=brain)
+summary(brain.lm)
+```
+If we look at the plot, it looks pretty good:
+
+```{r}
+brain %>% ggplot(aes(x=BrainSize,y=PIQ))+geom_point()+
+  stat_smooth(method=lm,se=F)
+```
+But can we say that this relationship is causal?
+
+\vspace{1.in}
+
+```{r}
+ggpairs(brain)
+```
+
+Here we see a couple of things
+
+\vspace{1.5in}
+
+In order to account for the potential covariation we want to 'adjust' for height.  That is, we only want to consider the variation in the model that can be isolated from the variation due to height.
+
+Note that height adjusted PIQ is found from:
+
+\vspace{.75in}
+
+```{r}
+brain %>% ggplot(aes(x=BrainSize,y=PIQ,color=Height))+geom_point()+
+   scale_color_gradient(low="blue", high="red")
+```
+
+Now we can adjust by examining the residuals of the univariate model
+
+```{r}
+uni.lm<-lm(PIQ~Height,data=brain)
+brain<-brain %>% mutate(adj.PIQ=uni.lm$residuals)
+adj.lm<-lm(adj.PIQ~BrainSize,data=brain)
+coef(adj.lm)
+```
+What happened to the slope?  Could we have predicted this?
+
+\vspace{.5in}
+
+Note that we still haven't adjusted Brain Size for height.  To expand on this, let's draw a causal diagram:
+
+\vspace{1.in}
+
+To do this, we want to height adjusted brain size.  TO get this we need the residuals from the model:
+
+\vspace{1.in}
+
+```{r}
+brain.adj.lm<-lm(BrainSize~Height,data=brain)
+brain<-brain %>% mutate(adj.Brain=brain.adj.lm$residuals)
+
+```
+
+Now we fit the model:
+
+\vspace{1.in}
+
+```{r}
+adj.lm<-lm(adj.PIQ~adj.Brain,data=brain)
+coef(adj.lm)
+```
+
+In words, we are fitting:
+
+\vspace{1.in}
+
+That is, if we account for height, then change in brain size by one unit predicts a change in .2061 units for PIQ, whereas previously it was 0.117.  What is going on here?
+
+\vspace{1.in}
+
+Note here, if height is NOT related to Brain size, then the model
+
+\vspace{1.in}
+
+Would yield residuals that look just like our origial values.
+
+To see if both variables explain a sufficient amount of variation in our response we run:
+```{r,message=FALSE,warning=FALSE}
+library(car)
+full.lm<-lm(PIQ~BrainSize+Height,data=brain)
+
+Anova(full.lm,type="II")
+```
+
+NOte here that the total Sums of squares are:
+```{r}
+SST=sum((brain$PIQ-mean(brain$PIQ))^2)
+```
+
+Let's look at the ANOVA table, what do we see that's surprising?
+
+\vspace{.5in}
+
+What is going on here?
+
+\vspace{.5in}
+
+Our fitted model is:
+```{r}
+coef(full.lm)
+```
+\vspace{1.in}
+
+Of course we could add an interaction term too.  The model is:
+
+\vspace{1.in}
+
+What is the interpretation of the interaction term?
+
+\vspace{1.in}
+
+```{r}
+inter.lm<-lm(PIQ~BrainSize*Height,data=brain)
+summary(inter.lm)
+```
+
+whoa...?  What is going on?
+
+\vspace{.3in}
+
+```{r}
+brain2<-brain.dat %>% select(PIQ,Height,BrainSize,interaction)
+ggpairs(brain2)
+
+```
+
+
+So, what is going on is that the ineraction term is highly correlated with Brain Size.  SO, let's think through the interpretation $\beta$ terms.
+
+\vspace{1.in}
+
+When you're in this situation one technique is to standardize the variables
+
+```{r}
+brain.cov<-brain%>%mutate_at(funs(scale(.)),.vars=vars(-PIQ))
+std.lm<-lm(PIQ~Height*BrainSize,data=brain.cov)
+summary(std.lm)
+```
