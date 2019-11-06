@@ -1,0 +1,170 @@
+---
+title: "Lsn 23"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+```
+
+## Admin/Writ
+
+Recall that the general form for a linear regresison model is:
+
+\vspace{1.in}
+
+We can think about this model as having two components, a linear predictor $\beta_0+\beta_1 x_{1,i}+\beta{2}x_{2,i}+\cdots+\beta{n}x_{n,i}$ and a random mechanism that perturbs us from the plane, $\epsilon_i$.
+
+However, sometimes, we might believe that the relationship between our covariates and response variable is not linear.  This can be done for a few different reasons, perhaps the best reason is if we have some previous knowledge that suggests $x$ and $y$ have a nonlinear relationship.  For example, if we remember the differential equation for radio active decay we had:
+
+$$Y'(t)=-k Y(t)$$
+
+Which yielded a solution of:
+
+$$Y(t)=C e^{-k t}$$
+
+Where $C$ depended on the initial conditions, say $C=3$ was the initial amount of substance.  Then we had a non linear relationship between $Y$ and $t$.  If we measured time and amount of radioactive subtstance we would have to account for measurement error and perhaps we could fit the statistical model:
+
+\vspace{1.in}
+
+Therefore it might make sense to talk about a general form for statistical models of:
+
+\vspace{1.in}
+
+This model has two components, signal, and noise.  While the best case is we are using a scientific mechanism to define the form of $f(x_i)$, in other cases we might just observe that clearly $x_i$ and $y_i$ don't have a linear relationship, so we might explore other forms of $f(x_i)$.
+
+The simplest function outside of a linear relationship is if we assume $f(x_i)=\beta_0+\beta_1 x_{1,i}+\beta_2 x_{1,i}^2$.  Or $x_{1,i}$ and $y_i$ have a quadratic relationship.  This is, what our text calls, a \textbf{polynomial statistical  model}.  While the relationship between $x_{1,i}$ and $y_i$ is non-linear here, fitting the model can be achieved in the exact same way as a linear regression model.  To see this, let's consider the Kentucky Derby data
+
+```{r}
+ky.dat<-read.table("http://www.isi-stats.com/isi2/data/KYDerby18.txt",header=T)
+ky.dat %>% ggplot(aes(x=Year,y=Time))+geom_point()
+```
+
+That's kinda weird...  But as it turns out, the distance changed in 1896, so we're comparing apples to oranges.  Let's look at speed vs year
+
+```{r}
+ky.dat %>% ggplot(aes(x=Year,y=speed))+geom_point()
+```
+
+Is there a story to the data?  Unusual observations?
+
+\vspace{1.in}
+
+This isn't uncommon in athletic performace.  We might think about there being a cap on the fastest a horse can possibly run.  So it might make sense to fit a quadratic model.  The model will be:
+
+\vspace{1.in}
+
+We can fit this by:
+```{r}
+ky.dat <- ky.dat %>% mutate(Year.sq=Year^2)
+poly.lm<-lm(speed~Year+Year.sq,data=ky.dat)
+summary(poly.lm)
+```
+
+To check the fit we can look at:
+
+```{r}
+ky.dat %>% ggplot(aes(x=Year,y=speed))+geom_point()+
+  geom_line(aes(x=Year,y=.fitted),data=poly.lm,lwd=2,color="red")
+```
+
+Fit looks decent.
+
+To check assumption on $\epsilon_i$ we have:
+
+```{r}
+poly.lm %>% ggplot(aes(x=.fitted,y=.resid))+geom_point()
+```
+
+Any concerns?
+
+\vspace{1.in}
+
+The fitted or predicted model is:
+
+\vspace{1.in}
+
+If we want to predict from this model, we could do:
+
+```{r}
+predict(poly.lm,data.frame(Year=2019,Year.sq=2019^2),interval="prediction")
+```
+
+Let's look at this:
+
+```{r}
+pred.df<-data.frame(y1=35.4,y2=37.8,x1=2019,x2=2019)
+ky.dat %>% ggplot(aes(x=Year,y=speed))+geom_point()+
+  geom_line(aes(x=Year,y=.fitted),data=poly.lm,lwd=2,color="red")+
+  geom_segment(aes(x = x1, y = y1, xend = x2, yend = y2),lwd=2,colour = "blue", data = pred.df)
+```
+
+One concern we might have is colinearity or a relationship between our predictors.  To examine this we again look at a pairs plot:
+
+```{r}
+sub.df<-data.frame(speed=ky.dat$speed,Year=ky.dat$Year,Year.sq=ky.dat$Year.sq)
+ggpairs(sub.df)
+```
+
+To fix this issue we can use what are called Orthogonal Polynomials.  The scope of this is a bit beyond the course, but how this works is, our intercept is equal to 1, our first polynomial is equal to $\frac{x-\bar{x}}{\sqrt{\sum_{i=1}^n x_i^2}}$.
+
+The second polynomial is found via recursion:
+
+$$P_2(x) = (x-\alpha_1)x+\frac{\sum(x^2)}{n}$$
+Which is then scaled by its l2 norm.
+
+Once this is done, these new covariates retain the polynomial shape of the raw polynomials, but are now uncorrelated with each other.  This is done in R using `poly()`
+
+```{r}
+orth.lm<-lm(speed~poly(Year,2),data=ky.dat)
+summary(orth.lm)
+ky.dat %>% ggplot(aes(x=Year,y=speed))+geom_point()+
+    geom_line(aes(x=ky.dat$Year,y=.fitted),data=orth.lm,lwd=2,color="red")
+```
+
+Fit is the exact same
+
+```{r}
+predict(orth.lm,data.frame(Year=2019,Year.sq=2019^2),interval="prediction")
+```
+
+Prediction is the same
+
+```{r}
+new.df<-data.frame(speed=ky.dat$speed,v1=model.matrix(orth.lm)[,2],v2=model.matrix(orth.lm)[,3])
+ggpairs(new.df)
+```
+
+Our book discusses standardizing our covariates which does something similar, but orthogonal polynomials are probably more common in practice.  We can also add a cubic term to the model:
+
+```{r}
+ky.dat <- ky.dat %>% mutate(Year.3=Year^3)
+poly3.lm<-lm(speed~Year+Year.sq+Year.3,data=ky.dat)
+```
+
+Does this appear to significantly improve the fit?
+
+```{r}
+orth3.lm<-lm(speed~poly(Year,3),data=ky.dat)
+summary(orth3.lm)
+```
+
+If we want to account for track condition we note that there's a ton of levels:
+
+```{r}
+levels(ky.dat$condition)
+```
+
+After adjusting for year, we could fit:
+```{r}
+condition.lm<-lm(speed~Year+Year.sq+condition,data=ky.dat)
+```
+
+To see if this matters we can compare the smaller (nested) model via:
+
+```{r}
+anova(poly.lm,condition.lm)
+```
