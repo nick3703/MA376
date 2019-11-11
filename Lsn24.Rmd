@@ -1,0 +1,131 @@
+---
+title: "Lsn 24"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+```
+
+## Admin
+
+Last class we talked about modifying the right hand side of our regression model.  That is, we could fit the class of models:
+
+
+\vspace{.5in}
+
+Where $f(x_i)$ that we considered was the class of polynomial functions.  Another class of regression models is fitting:
+
+\vspace{1.in}
+
+Why would we want to do this?  Well, we might do it because we have a reason to believe that this is the underlying relationship.  Another common reason is that our assumptions are violated.  For instance, speed and stopping distance look like:
+
+```{r}
+stopping.dat<-read_table2("http://www.isi-stats.com/isi2/data/stopping.txt")%>%drop_na()
+stopping.dat %>% ggplot(aes(x=speed,y=stoppingdistance))+
+  geom_point()
+```
+
+Here we see that a model relating speed to stopping distane linearly might not be appropriate.  Why?
+
+\vspace{1.in}
+
+To account for this we might consider transforming $y$.  One common transformation is $\log(y)$  (Note:  From here on out in life, when someone writes $\log$ assume that it is natural log)
+
+Why $\log(y)$?  This comes from the delta method in statistics. The assumption we are making when we use the log transformation is that the variance of $y$ is increasing as the expected value of $y$ increases.  That is:
+
+\vspace{1.in}
+
+The delta method says that any transformation of a random variable can be expressed as:
+
+\vspace{1.in}
+
+Similarly $\sqrt{y}$ can be used if we have $y$ that has variance of:
+
+\vspace{1.in}
+
+So, any power transformation can be done if we want to correct or stabilize our variance and our variance is a function of our mean.
+
+So why note transform?
+
+Well, it changes the relationship between $x_i$ and $y_i$.  Note that previously we had assumed $x_i$ and $y_i$ had a linear relationship.  Now, let's take $\log(y_i)$ and fit a regression model.  The model is now:
+
+\vspace{1.in}
+
+So now the relationship between $x_i$ and $y_i$ becomes:
+
+\vspace{1.in}
+
+Overall, my recommendation is, if I don't care about exploring a linear relationship between $x_i$ and $y_i$ then transform away in order to fix assumptions.  If we DO care about the linear relationshp, then we shouldn't do this.
+
+Here we could do:
+```{r}
+stopping.dat=stopping.dat %>% mutate(log.stop=log(stoppingdistance))
+log.lm<-lm(log.stop~speed,data=stopping.dat)
+
+log.lm %>% ggplot(aes(x=.fitted,y=.resid))+geom_point()
+```
+
+If we are satisfied with this we could find:
+```{r}
+predict(log.lm,data.frame(speed=4),interval="prediction")
+```
+
+But remember that this isn't a PI for stopping.  It is for log(stopping), so our 95 \% PI for stopping is 
+
+```{r}
+exp(1.1)
+exp(2.6)
+```
+
+Let's see what happens though if we choose a different transformation:
+
+```{r}
+stopping.dat=stopping.dat %>% mutate(sq.stop=sqrt(stoppingdistance))
+sq.lm<-lm(sq.stop~speed,data=stopping.dat)
+
+sq.lm %>% ggplot(aes(x=.fitted,y=.resid))+geom_point()
+```
+
+Fit looks better
+
+```{r}
+predict(sq.lm,data.frame(speed=4),interval="prediction")
+```
+
+Again, this is for square root of stopping time, so to find actual interval we need:
+```{r}
+.452^2
+3.4^2
+```
+
+So certainly the transformation matters.  How do we know that we have the \textit{right} transformation?  Well, we cannot do:
+
+```{r}
+anova(sq.lm,log.lm)
+```
+
+In fact it gives us a warning.  Our models are NOT nested, so statistics doesn't help us here.  
+
+One way is to note that all of the transformations are special cases of what are known as box-cox transformations.
+
+\vspace{1.in}
+
+So we can find the value of $\lambda$ that maximizes the log-likelihood of this.
+
+```{r}
+library(MASS)
+boxcox(stoppingdistance~speed,data=stopping.dat)
+
+```
+
+Here $\lambda=0$ is log transformation and $\lambda=.5$ is square root, $\lambda=1$ is no transformation.  So it looks like $\lambda \approx .5$ would be preferable here.
+
+So the model would be:
+
+\vspace{.5in}
+
+Note here there is not a nice clean linear or multiplicative relationship between $x_i$ and $y_i$, but there is \textbf{a} relationship.  If we want a predictive model this would suffice but if we want to explore a linear relationship between $x_i$ and $y_i$ this would not be appropriate.
