@@ -114,4 +114,71 @@ cell22=(32-22)^2/22
 cell11+cell21+cell12+cell22
 ```
 
-We compare this to a $\chi^2$ distribution with $(r-1)(c-1)$ degrees of freedom, or in this case, 1 degree of freedom
+We compare this to a $\chi^2$ distribution with $(r-1)(c-1)$ degrees of freedom, or in this case, 1 degree of freedom.
+
+Yet another statistic (that we will see is quite useful in some cases) is the odds ratio.  The odds ratio is formed by comparing the odds of success from group 1 to the odds of success from group 2.  Odds are:
+
+\vspace{1.in}
+
+So from our dataset, we compute the odds of success having been given Treatment A (neutral wording) as:
+
+```{r}
+p1=44/(44+12)
+Odds1=p1/(1-p1)
+Odds1
+```
+
+The odds of success having been given Treatment B (opt-in wording) is:
+
+```{r}
+p2=23/(23+32)
+Odds2=p2/(1-p2)
+Odds2
+```
+
+Under $H_0$ (there is no difference in the proportion of successes between Treatments), what should the Ratio between `Odds1/Odds2` equal?
+
+\vspace{.4in}
+
+To see how rare OUR OR is, we can again simulate:
+```{r}
+Our.OR<-Odds1/Odds2
+M<-1000
+results<-data.frame(trial=seq(1,M),stat=NA)
+for(i in 1:M){
+  donor.dat.mod <- donor.dat %>% mutate(shuff.cat=sample(Default))
+  my.table<-table(donor.dat.mod$Choice,donor.dat.mod$shuff.cat)
+  p.tabl<-prop.table(my.table,2)
+  Odds.sim1<-p.tabl[1,1]/(1-p.tabl[1,1])
+  Odds.sim2<- p.tabl[1,2]/(1-p.tabl[1,2])
+  results[i,]$stat<-Odds.sim1/Odds.sim2
+}
+results %>% ggplot(aes(x=stat))+geom_histogram()+geom_vline(xintercept = Our.OR,lwd=2,color="red")
+```
+
+So again, strong evidence against the null.  In order to use a theory based test involving Odds, it turns out that it often times is better to use log-Odds.  Though harder to interpret, let's take a look at the distribution under $H_0$.
+
+```{r}
+results <- results %>% mutate(log.stat=log(stat))
+results %>% ggplot(aes(x=log.stat))+geom_histogram()
+```
+
+As this statistic is generally symmetric, it turns out that log-Odds converges super quickly under the CLT to a normal distribution, which makes life really nice.
+
+Next lesson we will continue to use log-Odds as a statistic.  Our statistical model will become:
+
+\vspace{1.5in}
+
+Here we see we are placing structure on log-Odds similarly to how we place structure on $\mu$ in a linear regression model.  This model is called a logistic regression model.
+
+This can be fit in R using what is known as a Generalized Linear Model.  This class of models is extremely flexible
+
+\vspace{1.5in}
+
+```{r}
+donor.dat <-donor.dat %>% mutate(bin.outcome=ifelse(Choice=="donor",1,0))
+my.glm<-glm(bin.outcome~Default,data=donor.dat,family="binomial")
+coef(my.glm)
+```
+
+So the log-Odds of someone with Neutral wording is 1.299, or the Odds are `exp(1.299)=3.665` and the log-Odds of someone with opt-in wording is 1.299-1.629, or the Odds are `exp(1.299-1.629)=.719`
