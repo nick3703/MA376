@@ -1,0 +1,117 @@
+---
+title: "Lsn 25"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+options(tinytex.verbose = TRUE)
+```
+
+## Admin
+
+A 2003 study explored whether the wording on a driver's license application might impact the likelihood of applicants agreeing to be an organ doner.  161 participants were recruited for the study and were randomly assigned to two groups, one that had to opt in to be an organ donor, the second group just had a neutral question "Do you wish to be an organ donor?"  The question being explored is, does the prompt impact the probability of being an organ donor.
+
+The sources of variation diagram is:
+
+\vspace{1.5in}
+
+Our response variable is:
+
+\vspace{.5in}
+
+This makes a slightly different statistical model then perhaps we're used to:
+
+\vspace{1.in}
+
+The null hypothesis then is that there is no difference in the propbabilty of an individual becoming an organ donor.  In symbols we have:
+
+\vspace{.5in}
+
+A common way to depict data of this sort is through a 2 $\times$ 2 contingency table:
+
+\vspace{1.in}
+
+```{r}
+donor.dat<-read.table("donor.txt",header=T)
+donor.dat <-donor.dat %>% filter(Default !="opt-out")%>%droplevels()
+my.table<-table(donor.dat$Choice,donor.dat$Default)
+my.table 
+```
+
+Our parameter we are interested in is $\pi_1-\pi_2$, which can naturally be estimated by:
+
+\vspace{.5in}
+
+Under $H_0$ we would expect $\hat{p}_1-\hat{p}_2$ to be centered at zero (why?)
+
+Our statistic here is $44/56 - 23/55=0.368$
+
+To see how rare this is under $H_0$ we can employ our shuffling strategy:
+```{r}
+M<-5000
+results<-data.frame(trial=seq(1,M),stat=NA)
+for(i in 1:M){
+  donor.dat.mod <- donor.dat %>% mutate(shuff.cat=sample(Default))
+  my.table<-table(donor.dat.mod$Choice,donor.dat.mod$shuff.cat)
+  p.tabl<-prop.table(my.table,2)
+  results[i,]$stat<-p.tabl[1,1]-p.tabl[1,2]
+}
+results %>% ggplot(aes(x=stat))+geom_histogram()+
+  geom_vline(xintercept=0.367,lwd=2,color="red")
+```
+
+So, pretty rare...
+
+Because simulations can be a bit of a pain, we can also use a theory based approach if we have at least 10 successes and 10 failures \textbf{in each group}.  In this canse we can say that the CLT has kicked in and we can use:
+
+\vspace{1.in}
+
+A simple way to impliment in R is using `prop.test()` though we have to make sure we input the data in correctly
+
+```{r}
+my.table<-table(donor.dat$Default,donor.dat$Choice)
+#NOTE THIS IS DIFFERENT THAN OUR VISUALIZATION
+#Look at ?prop.test
+prop.test(my.table,correct = FALSE)
+```
+
+Here the CI comes from:
+
+```{r}
+p1=.7857
+p2=.4182
+n1=56
+n2=55
+se.ci=sqrt(p1*(1-p1)/n1+p2*(1-p2)/n2)
+multiplier=qnorm(.975)
+(p1-p2)-multiplier*se.ci
+(p1-p2)+multiplier*se.ci
+
+```
+
+As we see here we also get a $\chi^2$ statistic.  The statistic can be found through calculating:
+
+$$\sum_{Cells} \frac{(Obs-Exp)^2}{Exp}$$
+
+Our Observed are the values in the table.  Our expected is calculated from what we would have expected to get in each cell assuming $\pi_1=\pi_2$.  So, for instance, if $\pi_1=\pi_2$ then we could find a common estimate of $\pi=\pi_1=\pi_2$ through
+
+```{r}
+pi=(44+23)/(44+23+12+32)
+pi
+```
+
+So, if $H_0$ is true, we would have expected, out of 54 people given the neutral wording, $54*.60$, or 32.4 to have been a donor, and 21.6 not to have donated.  With opt-in wording, we had 55 people, so we would have expected $55*.60$ or 33 to have been a donor and 22 to not have donated.  So our statistic is found through:
+
+```{r}
+cell11=(44-32.4)^2/32.4
+cell21=(12-21.6)^2/21.6
+cell12=(23-33)^2/33
+cell22=(32-22)^2/22
+cell11+cell21+cell12+cell22
+```
+
+We compare this to a $\chi^2$ distribution with $(r-1)(c-1)$ degrees of freedom, or in this case, 1 degree of freedom
