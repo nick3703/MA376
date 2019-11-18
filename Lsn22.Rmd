@@ -109,12 +109,12 @@ sub.df<-data.frame(speed=ky.dat$speed,Year=ky.dat$Year,Year.sq=ky.dat$Year.sq)
 ggpairs(sub.df)
 ```
 
-To fix this issue we can use what are called Orthogonal Polynomials.  The scope of this is a bit beyond the course, but how this works is, our intercept is equal to 1, our first polynomial is equal to $x\equiv x-\bar{x}$.
+To fix this issue we can use what are called Orthogonal Polynomials.  The scope of this is a bit beyond the course, but how this works is, our intercept is equal to 1, our first polynomial is equal to $\frac{x-\bar{x}}{\sqrt{\sum_{i=1}^n x_i^2}}$.
 
 The second polynomial is found via recursion:
 
-$$P_2(x) = (x-\frac{<x^2,x>}{<x,x>})x - \frac{<x,x>}{n}$$
-Each of the polynomial terms are then scaled by their l2 norm making them orthonormal polynomials.
+$$P_2(x) = (x-\alpha_1)x+\frac{\sum(x^2)}{n}$$
+Which is then scaled by its l2 norm.
 
 Once this is done, these new covariates retain the polynomial shape of the raw polynomials, but are now uncorrelated with each other.  This is done in R using `poly()`
 
@@ -160,8 +160,7 @@ levels(ky.dat$condition)
 
 After adjusting for year, we could fit:
 ```{r}
-condition.lm<-lm(speed~poly(Year,2)+condition,data=ky.dat)
-summary(condition.lm)
+condition.lm<-lm(speed~Year+Year.sq+condition,data=ky.dat)
 ```
 
 To see if this matters we can compare the smaller (nested) model via:

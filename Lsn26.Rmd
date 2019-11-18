@@ -1,0 +1,144 @@
+---
+title: "Lsn 26"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+library(boot)
+options(tinytex.verbose = TRUE)
+```
+
+## Admin
+
+## Basic Laws - KNOW these
+
+
+Researchers were interested in rates of alcohol abuse among men and women in Ukraine, investigationg questiona about whether rates differ depending on variables such as sex and age, and after adjustin g for such potential confoudning variables, how the rates may be related to explsure to different conflicts and traumas such as living near Chernobyl.
+
+```{r}
+cher.dat<-read.table("http://www.isi-stats.com/isi2/data/cherdata.txt",header=T)
+```
+
+In total we have:
+
+```{r}
+cher.dat %>% summarize(count=n())
+```
+
+Observations.  We first remove those that had alcohol abuse \textit{before} Chernobyl
+
+```{r}
+sub.cher <- cher.dat %>% filter(alc.post !="before")
+sub.cher %>% summarize(count=n())
+```
+
+If we wanted to test the association betwen `alc.post` and `sex` how would we do it?
+
+\vspace{.5in}
+
+```{r}
+x=c(62,257)
+n=c(62+2853,257+1343)
+prop.test(x,n,correct=FALSE)
+```
+
+From here, what is the odds-ratio?
+
+\vspace{1.in}
+
+What if we were interested in the association between `age` and `alc.post`?  Could we repeat our analysis from above?  What would we  have to do?
+
+\vspace{1.in}
+
+Perhaps we want to take a model based approach.  Looking at the plot:
+
+```{r}
+sub.cher<-sub.cher %>% mutate(alc.bin=ifelse(alc.post=="yes",1,0))
+sub.cher%>% ggplot(aes(x=jitter(age),y=jitter(alc.bin)))+geom_point()+
+  stat_smooth(method="lm",se=FALSE,color="red",lwd=2)
+```
+
+Are there issues using a linear model here?  We might also do?
+
+
+```{r}
+
+grouped.cher=sub.cher %>% group_by(age)%>%summarize(prop=mean(alc.bin))
+
+grouped.cher %>% ggplot(aes(x=age,y=prop))+geom_point()+
+  stat_smooth(method="lm",se=FALSE)
+
+```
+
+Either way the linear fit is concerning and not appropriate to the data.  It may work better in this case, to fit a logistic regression.  A logistic regression model for our data is:
+
+\vspace{1.in}
+
+The assumption, then, is we can fit a logistic curve through our data.  In R we can do:
+
+```{r}
+cher.glm<-glm(alc.bin~age,data=sub.cher,family="binomial")
+```
+
+To see the fit we can do:
+
+```{r}
+library(broom)
+fitted.glm<-augment(cher.glm)
+fitted.glm %>% ggplot(aes(x=age,y=alc.bin))+geom_point()+
+  geom_line(aes(x=age,y=inv.logit(.fitted)),lwd=2,color="red")
+```
+
+Let's talk about this code......
+
+The coefficients of our fitted model are found through MLE and are:
+
+```{r}
+coef(cher.glm)
+```
+
+So our fitted model is:
+
+\vspace{1.in}
+
+The predicted odds of someone age 50 of being diagnosed with alcohol abuse is:
+
+\vspace{.5in}
+
+To interpret the slope, let's compare the odds of someone 50 to the odds of someone 51
+
+\vspace{.5in}
+
+If we want to test gender, we could do:
+
+```{r}
+gender.glm<-glm(alc.bin~sex,data=sub.cher,family="binomial")
+summary(gender.glm)
+```
+
+Note that the Z value in this case is NOT the square root of the $\chi^2$ statistic above.  That's because they are testing two different things.  One is testing independence of $\pi$ values, the other is testing a logistic relationship between sex and alcohol.
+
+What is the predicted odds ratio for males compared to females?  How does this relate to our parameters?
+
+\vspace{1.in}
+
+What is the probability a male is diagnosed with alcoholism?  What is the probability a female is diagnosed?
+
+\vspace{1.in}
+
+What is a 95\% CI for $\beta_{sex}$?  
+
+\vspace{.5in}
+
+So this gives us a 95\% Confidence interval for the effect of sex on the log-odds.  If we want a 95\% CI for the multiplicative effect of gender on alcoholism we could do:
+
+```{r}
+exp(1.89)
+exp(2.46)
+```
+
+So males are 6.67 to 11.7 more times likely to develop alcoholism than females, according to this analysis.

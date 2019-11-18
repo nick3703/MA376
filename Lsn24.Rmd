@@ -49,7 +49,7 @@ Similarly $\sqrt{y}$ can be used if we have $y$ that has variance of:
 
 So, any power transformation can be done if we want to correct or stabilize our variance and our variance is a function of our mean.
 
-So why note transform?
+So why not transform?
 
 Well, it changes the relationship between $x_i$ and $y_i$.  Note that previously we had assumed $x_i$ and $y_i$ had a linear relationship.  Now, let's take $\log(y_i)$ and fit a regression model.  The model is now:
 

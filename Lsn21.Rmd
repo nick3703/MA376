@@ -51,10 +51,10 @@ What is this output showing us?
 
 ```{r,warning=FALSE}
 library(rgl)
-#x=pistachio.dat$Temperature
-#y=pistachio.dat$AirVelocity
-#z=pistachio.dat$Peroxide
-#plot3d(x,y,z)
+x=pistachio.dat$Temperature
+y=pistachio.dat$AirVelocity
+z=pistachio.dat$Peroxide
+plot3d(x,y,z)
 ```
 
 Note that this might lead to the model:
@@ -128,8 +128,8 @@ Note here our intercept actually means something.
 Let's see this:
 ```{r}
 #install.packages("p3d", repos="http://R-Forge.R-project.org")
-#library(p3d)
-#Plot3d(std.lm)
+library(p3d)
+Plot3d(std.lm)
 ```
 
 Here we note that our response surface is a plane.  
