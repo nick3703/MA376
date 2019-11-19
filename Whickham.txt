@@ -1,0 +1,15 @@
+age	smoking.status	alive	interviewed	AgeQ
+18-24	smoker	53	55	21
+18-24	nonsmoker	61	62	21
+25-34	smoker	121	124	29.5
+25-34	nonsmoker	152	157	29.5
+35-44	smoker	95	109	39.5
+35-44	nonsmoker	114	121	39.5
+45-54	smoker	103	130	49.5
+45-54	nonsmoker	66	78	49.5
+55-64	smoker	64	115	59.5
+55-64	nonsmoker	81	121	59.5
+65-74	smoker	7	36	69.5
+65-74	nonsmoker	28	129	69.5
+75 and older	smoker	0	13	79.5
+75 and older	nonsmoker	0	64	79.5
