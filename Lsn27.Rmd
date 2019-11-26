@@ -1,0 +1,164 @@
+---
+title: "Lsn 27"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+library(boot)
+options(tinytex.verbose = TRUE)
+```
+
+## Admin
+
+Does smoking impact 20 year survival after adjusting for age at the initial interview?
+
+Our sources of variation diagram is:
+
+\vspace{1.in}
+
+One way to explore our data is from a mosaic plot (which is similar to a segmented bar chart).  This can be implimented via the `ggmosaic` library in R
+```{r,message=FALSE,warning=FALSE}
+library(ggmosaic)
+dat<-read.csv("smoke.csv")
+dat.mod <- dat %>% mutate(age.fac=as.factor(Age),smoke.fac=as.factor(Smoker))
+
+dat.mod %>% ggplot()+
+  geom_mosaic(aes(x=product(smoke.fac,age.fac),fill=smoke.fac))
+```
+
+From here, what concerns might we have in any analysis of the data?
+
+\vspace{1.in}
+
+We can find the empirical odds ratios by:
+
+```{r}
+group.odds=dat %>% group_by(Age,Smoker)%>%summarize(odds=mean(Alive)/(1-mean(Alive)))
+odds.ratios=group.odds %>% group_by(Age)%>%summarize(ratio=odds[Smoker==1]/odds[Smoker==0])
+odds.ratios
+```
+
+From here, what does it look like is happening?
+
+\vspace{1.in}
+
+However, if we take the full data set we have:
+
+```{r}
+smoke.glm<-glm(Alive~Smoker,data=dat,family="binomial")
+coef(smoke.glm)
+```
+So the odds ratio between Smokers and non-Smokers is:
+
+\vspace{.5in}
+
+This is an example of \textit{Simpson's Paradox} and is due to the confounding in our data.  To account for this, we need to adjust for age in our model.
+
+Our logistic regression model becomes:
+
+\vspace{1.5in}
+
+
+To fit this we do:
+
+```{r}
+smokeage.glm<-glm(Alive~Smoker+Age,data=dat,family="binomial")
+summary(smokeage.glm)
+```
+
+The fit can be seen by:
+```{r,warning=FALSE,message=FALSE}
+library(broom)
+library(boot)
+
+fit.dat<-augment(smokeage.glm)%>% 
+group_by(Age,Smoker)%>%summarize(fit=inv.logit(mean(.fitted)))
+
+samp.props=dat %>% group_by(Age,Smoker)%>%summarize(ps=mean(Alive))
+
+fit.dat %>%ggplot(aes(x=Age,y=fit,group=Smoker,color=as.factor(Smoker)))+
+  geom_line()+geom_point(aes(x=Age,y=ps,color=as.factor(Smoker)),data=samp.props)
+```
+
+While perhaps this is difficult to see, one of the assumptions of the model is that the odds ratio between smokers and non-smokers of the same age is:
+
+\vspace{.5in}
+
+From our empirical data perhaps this isn't the case.  To correct this we can add an interaction term and our model becomes:
+
+\vspace{1.in}
+
+From here, we see that for a given age, the odds ratio between smoker and non-smoker is:
+
+\vspace{1.in}
+
+This is fit by:
+
+
+```{r}
+full.glm<-glm(Alive~Smoker*Age,data=dat,family="binomial")
+summary(full.glm)
+```
+
+The new curves are:
+
+```{r}
+
+fit.dat<-augment(full.glm)%>% 
+group_by(Age,Smoker)%>%summarize(fit=inv.logit(mean(.fitted)))
+
+fit.dat %>%ggplot(aes(x=Age,y=fit,group=Smoker,color=as.factor(Smoker)))+
+  geom_line()+geom_point(aes(x=Age,y=ps,color=as.factor(Smoker)),data=samp.props)
+```
+
+So is it helpful to have an interaction term here?  To address this, we need something similar to ANOVA.  However our assumptions for ANOVA cannot, in any way, be satisfied.  Commonly, this is done through computing Deviance of a model.  Deviance of a model is related to maximum likelihood estimation.  For logistic regression, we compute the log-likelihood of the  null model and compare it to the log-likelihood of our model, which has a $\chi^2$ distribution with $p$ degrees of freedom where $p$ is the number of terms in our model (in this case 3)
+
+This is similar to the ANOVA test we do at the beginning to say is our model better than the null model.  We can get more specific by doing:
+
+```{r,warning=FALSE,message=FALSE}
+library(car)
+Anova(full.glm,type="III") #Warning here...
+```
+
+Just as in linear regression we need to check performance.  It doesn't really make sense to look at $R^2$ here (why?), so what is commonly done is to form what is called a \textbf{Confusion matrix}
+
+```{r,warning=FALSE,message=FALSE}
+
+library(caret)
+
+pdata<- predict(full.glm,type="response")
+
+cm<-confusionMatrix(data=as.factor(pdata>0.5),reference = as.factor(dat$Alive==1))
+cm$table
+```
+There's a ton here to unpack and we won't have time to go into it (take MA478!)
+
+
+However, one thing to note is if we didn't include an interaction term we would have:
+
+```{r,warning=FALSE,message=FALSE}
+
+pdata<- predict(smokeage.glm,type="response")
+
+cm<-confusionMatrix(data=as.factor(pdata>0.5),reference = as.factor(dat$Alive==1))
+cm$table
+```
+
+Which shows we're not gaining a ton by including an interaction here.  However if we use the first model of only smoking we have:
+
+
+```{r,warning=FALSE,message=FALSE}
+
+pdata<- predict(smoke.glm,type="response")
+
+min(pdata)
+max(pdata)
+```
+
+Which, says that under this model we would always predict someone was alive!
+
+Let's interpret our results here:
