@@ -2,7 +2,9 @@
 title: "Lesson 11"
 author: "Clark"
 date: "September 25, 2019"
-output: pdf_document
+output:
+  word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -25,7 +27,7 @@ We can find the group means by:
 
 ```{r}
 dat<-read.table("http://www.isi-stats.com/isi2/data/WageSubset.txt",header=T)
-dat %>% group_by(race)%>%summarise(avg=mean(wage.100))
+dat %>% group_by(race,education)%>%summarise(avg=mean(wage.100))
 mean(dat$wage.100)
 ```
 

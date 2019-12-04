@@ -91,6 +91,9 @@ for(j in 1:M){
   shuff.lm<-lm(Event~shuffled.cat,data=ACFT.mod)
   stats.df[j,]$stat<-anova(shuff.lm)$"F value"[1]
 }
+
+stats.df %>% filter(stat>3.1123)%>% summarise(pval=n()/M)
+
 ```
 
 Let's talk about what I'm doing here.

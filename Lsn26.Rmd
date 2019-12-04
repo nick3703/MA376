@@ -20,7 +20,7 @@ options(tinytex.verbose = TRUE)
 Researchers were interested in rates of alcohol abuse among men and women in Ukraine, investigationg questiona about whether rates differ depending on variables such as sex and age, and after adjustin g for such potential confoudning variables, how the rates may be related to explsure to different conflicts and traumas such as living near Chernobyl.
 
 ```{r}
-cher.dat<-read.table("http://www.isi-stats.com/isi2/data/cherdata.txt",header=T)
+cher.dat<-read.table("cherdata.txt",header=T)
 ```
 
 In total we have:
@@ -89,7 +89,7 @@ To see the fit we can do:
 ```{r}
 library(broom)
 fitted.glm<-augment(cher.glm)
-fitted.glm %>% ggplot(aes(x=age,y=alc.bin))+geom_point()+
+fitted.glm %>% ggplot(aes(x=jitter(age),y=jitter(alc.bin)))+geom_point()+
   geom_line(aes(x=age,y=inv.logit(.fitted)),lwd=2,color="red")
 ```
 

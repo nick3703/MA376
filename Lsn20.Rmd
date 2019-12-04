@@ -56,9 +56,9 @@ Which doesn't have the same relationshp with the t statistic before.  Note here 
 In R we can see the levels using `levels(diamonds$Clarity)`.  If we want to change which category is our reference category we can explicity relevel within R
 
 ```{r}
-diamonds$modClarity<-factor(diamonds$Clarity,levels=c("VS1","VS2","VVS1","VVS2","IF"))
-clarity2.lm<-lm(Price~modClarity,data=diamonds)
-summary(clarity2.lm)
+#diamonds$modClarity<-factor(diamonds$Clarity,levels=c("VS1","VS2","VVS1","VVS2","IF"))
+#clarity2.lm<-lm(Price~modClarity,data=diamonds)
+#summary(clarity2.lm)
 ```
 
 Which we can see doesn't change our group estimates, but does change our P values.  Why?
