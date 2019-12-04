@@ -25,7 +25,6 @@ One way to explore our data is from a mosaic plot (which is similar to a segment
 library(ggmosaic)
 dat<-read.csv("smoke.csv")
 dat.mod <- dat %>% mutate(age.fac=as.factor(Age),smoke.fac=as.factor(Smoker))
-
 dat.mod %>% ggplot()+
   geom_mosaic(aes(x=product(smoke.fac,age.fac),fill=smoke.fac))
 ```
@@ -74,12 +73,9 @@ The fit can be seen by:
 ```{r,warning=FALSE,message=FALSE}
 library(broom)
 library(boot)
-
 fit.dat<-augment(smokeage.glm)%>% 
 group_by(Age,Smoker)%>%summarize(fit=inv.logit(mean(.fitted)))
-
 samp.props=dat %>% group_by(Age,Smoker)%>%summarize(ps=mean(Alive))
-
 fit.dat %>%ggplot(aes(x=Age,y=fit,group=Smoker,color=as.factor(Smoker)))+
   geom_line()+geom_point(aes(x=Age,y=ps,color=as.factor(Smoker)),data=samp.props)
 ```
@@ -107,10 +103,8 @@ summary(full.glm)
 The new curves are:
 
 ```{r}
-
 fit.dat<-augment(full.glm)%>% 
 group_by(Age,Smoker)%>%summarize(fit=inv.logit(mean(.fitted)))
-
 fit.dat %>%ggplot(aes(x=Age,y=fit,group=Smoker,color=as.factor(Smoker)))+
   geom_line()+geom_point(aes(x=Age,y=ps,color=as.factor(Smoker)),data=samp.props)
 ```
@@ -127,11 +121,8 @@ Anova(full.glm,type="III") #Warning here...
 Just as in linear regression we need to check performance.  It doesn't really make sense to look at $R^2$ here (why?), so what is commonly done is to form what is called a \textbf{Confusion matrix}
 
 ```{r,warning=FALSE,message=FALSE}
-
 library(caret)
-
 pdata<- predict(full.glm,type="response")
-
 cm<-confusionMatrix(data=as.factor(pdata>0.5),reference = as.factor(dat$Alive==1))
 cm$table
 ```
@@ -141,9 +132,7 @@ There's a ton here to unpack and we won't have time to go into it (take MA478!)
 However, one thing to note is if we didn't include an interaction term we would have:
 
 ```{r,warning=FALSE,message=FALSE}
-
 pdata<- predict(smokeage.glm,type="response")
-
 cm<-confusionMatrix(data=as.factor(pdata>0.5),reference = as.factor(dat$Alive==1))
 cm$table
 ```
@@ -152,9 +141,7 @@ Which shows we're not gaining a ton by including an interaction here.  However i
 
 
 ```{r,warning=FALSE,message=FALSE}
-
 pdata<- predict(smoke.glm,type="response")
-
 min(pdata)
 max(pdata)
 ```
