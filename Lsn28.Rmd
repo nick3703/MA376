@@ -1,0 +1,242 @@
+---
+title: "Lsn 28"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+library(boot)
+library(car)
+options(tinytex.verbose = TRUE)
+```
+
+## Admin
+
+We tend to do students a disservice in statistics courses because the data is given to you perfectly clean and accurate.  This is, of course, not how life really works.
+
+
+For example, researchers were interested in how Omega-3 index values compare between the Framingham Heart study and different subsets of the U.S. population, so they collected data in seven cities.  That data look like:
+```{r}
+framing.dat<-read.csv("FraminghamOmega3.csv")
+head(framing.dat)
+```
+
+The first little bit of cleaning I'd do is change the name `Omega3...` for convenience
+
+```{r}
+framing.dat <- framing.dat %>%
+  mutate(Omega3=Omega3...)%>%
+  select(-`Omega3...`)
+```
+
+While this isn't necessary, it does help others read my code.  The next thing we might do is to determine if we have complete data.  If we don't and we just start calculating statistics we might do:
+
+```{r}
+mean(framing.dat$Omega3)
+```
+And we see we have problems.  Why is R doing this?
+
+\vspace{.5in}
+
+To see how many observations have NAs in them we can do the following:
+
+```{r}
+complete<-complete.cases(framing.dat)
+sum(complete)
+nrow(framing.dat)
+```
+
+What's happening here?
+
+\vspace{1.in}
+
+Is this a big deal?
+
+\vspace{.5in}
+
+To examine which cases are missing data we can do:
+
+```{r}
+fram.complete <- framing.dat %>% drop_na()
+```
+
+
+Then we do:
+```{r}
+fram.mis<- framing.dat %>% filter(is.na(Omega3))
+```
+
+Now we've made two datasets, one of the missing data and one that is not missing.  The reason we are doing this is we want to explore what sort of missingness we have.  The best case scenario is our data are \textbf{Missing Completely at Random}.  This is different than Missing by Design.  In reality, there are three different terms that can describe missingness.  Missing Completely at Random (MCAR), Missing at Random (MAR), and missing not at random (MNAR). 
+
+
+As an aside this is different than what our book is saying.
+
+But if our data are MCAR, then the values we did measure should be relatively consistent, as a quick check:
+
+```{r}
+t.test(fram.complete$Age,fram.mis$Age)
+```
+
+So, perhaps there is some mechanism informing the missingness.  We also could look at gender proportions.  How would we do this?
+
+\vspace{1.5in}
+
+In this case we probably are ok just ignorning the missing data. Note that we are never, in this class, talking about MNAR data. If our data were MNAR, then we would be missing Omega3 values for people who had really low or really high Omega3 values.  This becomes quite tricky. 
+
+Let's look at the second dataset
+
+```{r}
+screen.dat<-read.csv("ScreeningsOmega3.csv")
+screen.dat <- screen.dat %>%
+  mutate(Omega3=Omega3...)%>%
+  select(-Omega3...)
+head(screen.dat)
+```
+
+It looks like we are missing a ton here.
+
+```{r}
+screen.full <- screen.dat %>% drop_na()
+nrow(screen.dat)
+nrow(screen.full)
+```
+
+To explore this fuller we could summarize it:
+
+```{r}
+screen.mis<- screen.dat %>% filter(is.na(Sex))
+screen.mis %>% summarize(count=n(),mean.Omeg=mean(Omega3),sd.Omeg=sd(Omega3),mean.age=mean(Age),sd.age=sd(Age))
+```
+Which we compare to:
+
+```{r}
+screen.full %>% summarize(count=n(),mean.Omeg=mean(Omega3),sd.Omeg=sd(Omega3),mean.age=mean(Age),sd.age=sd(Age))
+```
+
+Due to a high sample size, if we were to form 95\% CI for Omega or Age, what could we say?
+
+\vspace{1.in}
+
+So, yeah, different.  For now, let's just deal with the complete cases.
+
+We continue to explore the data:
+
+```{r}
+screen.full%>%ggplot(aes(x=Omega3))+
+  geom_histogram()+
+  geom_rug(sides="b")
+```
+
+What do we see?  What should we do?
+
+\vspace{1.in}
+
+So now we want to get back to our research question.  Is there a difference between the two datasets?  Here's how I would combine the datasets:
+
+```{r}
+screen.full<- screen.full %>% mutate(Study="S")
+fram.complete <- fram.complete %>% mutate(Study="F")
+fulldat <- bind_rows(screen.full,fram.complete)
+```
+
+Now we can explore
+
+```{r}
+fulldat %>% ggplot(aes(x=Study,y=Omega3))+
+  geom_boxplot()
+```
+
+```{r}
+fulldat %>% group_by(Study)%>%
+  summarize(mean=mean(Omega3),sd=sd(Omega3),obs=n())
+```
+
+So, there is a difference in means (again, why can I say this without finding a p-value?)
+
+\vspace{.5in}
+
+But, we also have:
+
+```{r}
+fulldat %>% group_by(Study)%>%
+  summarize(mean=mean(Age),sd=sd(Age),obs=n())
+```
+
+What does the below plot suggest for our analysis?
+
+```{r}
+fulldat %>% ggplot(aes(x=Age,y=Omega3))+
+  geom_point()+
+  stat_smooth(method="lm",se=FALSE)
+  
+```
+
+\vspace{.5in}
+
+So we are building out our sources of variation diagram mentally.  What else could be impacting Omega 3?
+
+```{r}
+fulldat %>% ggplot(aes(x=Sex,y=Omega3))+
+  geom_boxplot()
+```
+
+So, now we could look at a statistical model to account for the fact that we might need to adjust for Sex and Age if we want to note the true differences in the studies.
+
+The model could be:
+
+\vspace{1.in}
+
+But we have another choice, we could put the missing `Sex` values back in to our dataset
+
+```{r}
+screen.dat<- screen.dat %>% mutate(Study="S")
+fulldat.mod <- bind_rows(screen.dat,fram.complete)
+```
+
+Then we can build the following model:
+
+\vspace{1.5in}
+
+To fit this in R we have to change the `<NA>` values. (Note we have to be a touch careful with this) As an aside, learn SQL commands and R data structures!
+
+```{r}
+fulldat.mod <- fulldat.mod %>%
+  mutate(Sex=as.character(Sex))%>%
+  replace_na(list(Sex="Missing"))
+```
+
+
+Now we are ready to go.  Again, in typical stats classes this is where we would \textit{start} our lesson...
+
+```{r,warning=FALSE,message=FALSE}
+omega.lm <- lm(Omega3~Age+Sex+Study,data=fulldat.mod)
+summary(omega.lm)
+Anova(omega.lm,type="III")
+```
+
+What's our conclusions here?
+
+\vspace{1.5in}
+
+Are we done?
+
+```{r}
+omega.lm %>% ggplot(aes(x=.fitted,y=.resid))+
+  geom_point()
+```
+
+One thing to do here is to repeat the analysis with the outliers removed
+
+```{r}
+fulldat.removed <- fulldat.mod %>% filter(omega.lm$residuals<10)
+```
+
+```{r}
+omega.mod.lm <- lm(Omega3~Age+Sex+Study,data=fulldat.removed)
+summary(omega.mod.lm)
+```
+
+Do our conclusions change?
