@@ -1,0 +1,24 @@
+---
+title: "Lesson 11"
+author: "Clark"
+date: "September 25, 2019"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Problem 1
+
+Here's my answer
+
+```{r}
+data<-read.table("http://www.isi-stats.com/isi2/data/squirrels.txt",header=T)
+
+data %>% group_by(Location)%>%summarize(avg=mean(Length))
+```
+
