@@ -1,0 +1,159 @@
+---
+title: "Lsn 29"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+library(boot)
+library(car)
+library(MASS)
+options(tinytex.verbose = TRUE)
+```
+
+## Admin
+
+Today we're going to have another 'one-off' lesson.  The ideas we'll talk about you may have seen in previous MA206 classes or not, either way, I'm going to give \textit{one} way to think about it, it may or may not be the \textit{best} way to think about variable selection.
+
+In either case, the first step is going to be the same.  We have to start with a reserach question.  For instance, we might want to know whether taking Omega-3 supplements impact fatty acid levels in the blood.  
+
+Here we have $n=1812$ observations where we have age, sex, race, BMI, Type of supplement (3 levels), dosage, duration, blood level before supplement and blood level after supplement.
+
+Let's write out the full statistical model
+
+
+\vspace{2.in}
+
+We can examine the pairs plot:
+
+```{r,message=FALSE,warning=FALSE}
+omega.dat<-read.csv("Walkerdisc.csv")
+omega.dat <- omega.dat %>% dplyr::select(-"pre_O3I",-"post_O3I")
+omega.dat %>% ggpairs()
+```
+
+Anything jump out?
+
+\vspace{2.in}
+
+Let's say we fit this model
+
+```{r}
+omega.lm<-lm(chg_O3I~.,data=omega.dat)
+summary(omega.lm)
+```
+
+What's going on here?
+
+```{r}
+omega.dat %>% ggplot(aes(x=Study,y=Duration))+geom_boxplot()
+```
+
+Here we've got an issue...
+
+\vspace{1.in}
+
+Let's remove study and try again
+
+```{r}
+omega.mod<-omega.dat %>% dplyr::select(-Study)
+omega.mod.lm<-lm(chg_O3I~.,data=omega.mod)
+summary(omega.mod.lm)
+```
+
+Now we can fit the model, but is it the \textit{best} model?  In general we want the most \textbf{parsimonious} statistical model.  So how do we fix this?  Well, one way is through a step-wise procedure.  Our book says one way is to either do forward or backward stepwise selection eliminating the variable with the largest P value first, then refitting.  
+
+So here we would eliminating `Age` and try again.
+
+```{r}
+omega.again<-omega.mod %>% dplyr::select(-Age)
+another.lm<-lm(chg_O3I~.,data=omega.again)
+summary(another.lm)
+```
+
+Why do the P values change here?
+
+\vspace{.5in}
+
+
+Another common technique is to eliminate based on \textit{Akaike's Information Criterion}.  The Akaike information criterion (AIC) is an estimator of out-of-sample prediction error and is calculated from:
+
+\vspace{.5in}
+
+In R it is implimented through the `MASS` library and allows you to do forward, backward, or both direction stepping
+
+```{r,results="hide"}
+step.mod<-stepAIC(omega.mod.lm,direction="both")
+```
+
+So, according to AIC, the final model is:
+
+\vspace{1.in}
+
+To see how well our model fits the data we want to test it on some data that we \textbf{did not use to build our model}.  This is called cross-validation
+
+```{r}
+validation.data<-read.csv("Walkervalid.csv")
+our.predictions<-predict.lm(step.mod,validation.data)
+```
+
+To see how well our data fit we can calculate the Mean Square Predicition Error, or MSPE
+
+```{r}
+sum((our.predictions-validation.data$chg_O3I)^2)
+
+```
+
+To see what would have happened had we not done any variable selection we could calculate, from the full model
+
+```{r}
+full.predictions<-predict.lm(omega.mod.lm,validation.data)
+sum((full.predictions-validation.data$chg_O3I)^2)
+```
+
+I always like to compare to the naive predictor or just predicting the mean for everything
+
+```{r}
+naive.pred<-mean(omega.dat$chg_O3I)
+sum((naive.pred-validation.data$chg_O3I)^2)
+```
+
+So both models improve over the null model but the reduced model is better than the full model for prediction.
+
+Note that this is not the only way of doing this.  If prediction is our only goal, then why stop here?  We can consider all sorts of different modesl that make no intuitive sense.
+
+For instance, there's a type of regression called lasso that works in the following way:
+
+
+\vspace{1.in}
+
+In R we do:
+
+```{r,message=FALSE,warning=FALSE}
+library(glmnet)
+x_vars <- model.matrix(omega.mod.lm)[,-1]
+y_var <- omega.mod$chg_O3I
+lambda_seq <- 10^seq(1, -10, by = -.01)
+
+cv_output <- cv.glmnet(x_vars, y_var, 
+            alpha = 1, lambda = lambda_seq)
+
+# identifying best lamda
+best_lam <- cv_output$lambda.min
+```
+
+Then we do:
+
+```{r}
+
+lasso_best <- glmnet(x_vars, y_var, alpha = 1, lambda = best_lam)
+test.data<-validation.data %>% dplyr::select(-"pre_O3I",-"post_O3I",-"Study")
+x.test<-model.matrix(lm(chg_O3I~.,data=test.data))[,-1]
+pred <- predict(lasso_best, s = best_lam, newx = x.test)
+sum((pred-validation.data$chg_O3I)^2)
+```
+
+Which isn't as good as the stepwise, but there's also Neural Networks, Random Forest, Bayesian methods, etc.  Once we are no longer exploring a mechanism of interest, but rather building a predictive model, we can really start to be creative.
