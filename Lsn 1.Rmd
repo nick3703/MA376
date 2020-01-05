@@ -21,7 +21,7 @@ Thayer Hall Room 226B (Back room, just keep going back...)
 
 845-938-0961
 
-#Course Overview
+# Course Overview
 
 \textit{Applied } Statistics
 
@@ -35,9 +35,11 @@ Thayer Hall Room 226B (Back room, just keep going back...)
 
 -Graded Events
 
-#Introductions
+# Introductions
 
-#Berkely Admissions Data
+# Getting started with R studio/knitr
+
+# Berkely Admissions Data
 
 In the early 1970s, the University of California at Berkeley was concerned with possible
 discrimination against women in its graduate admissions process. Data about the applicants for
