@@ -135,7 +135,7 @@ From MA206, we can build a statistical model
 & i=\mbox{House}\\
 & y_i = \mbox{Price of house }i\\
 & x_{1,i} = \mbox{Square footage of house }i\\
-y_{i} = \beta_0 + \beta_1 x_{1,i} + \epsilon_i
+& y_{i} = \beta_0 + \beta_1 x_{1,i} + \epsilon_i
 \end{align*}
 
 Recalling our previous course, we can fit this using the `lm()` function in R
@@ -176,8 +176,8 @@ The complete model would be:
 & i=\mbox{House}\\
 & y_i = \mbox{Price of house }i\\
 & x_{1,i} = \mbox{Square footage of house }i\\
-& x_{2,i} = 1\mbox{ If not lakefront, 0 otherwise}
-y_{i} = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \beta_3 x_{1,i} x_{2,i} + \epsilon_i
+& x_{2,i} = 1\mbox{ If not lakefront, 0 otherwise}\\
+& y_{i} = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \beta_3 x_{1,i} x_{2,i} + \epsilon_i
 \end{align*}
 
 Which we fit via:
