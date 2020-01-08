@@ -1,0 +1,224 @@
+---
+title: "Example Exploration"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+This is \textit{a} way to answer the explorations, it is certainly not the \textit{only} way.
+
+Here I will go through Exploration P.B.:  Housing Prices in Michigan
+
+## Problem 1
+
+Prior to looking at the data a few things would be, waterfront or not, size of house, number of bedrooms, neighborhood the house is in, size of garage, etc.
+
+## Problem 2
+
+The observational units are houses for sale north of Lake Macatawa, the response variable is price, which is quantitative.  As it is quantitative we should look at sample mean, median, variance, perhaps skewness.  We could use a histogram or boxplot to visualize this.
+
+## Problem 3 (Explore the data)
+
+First we pull in the data from the website and run `glimpse()` to see the structure of the data.  I like to do this to ensure that R is indeed reading in factors as factors and numerics as numerics.:
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+housing.data<-read.table("http://www.isi-stats.com/isi2/data/homeprices.txt" ,header=T)
+glimpse(housing.data)
+```
+
+As an aside, say we are confused as to what R is doing here.  We have both something called `dbl` and something called `int`.  I would \textbf{highly} encourage you in this course to explore things like this.  A simple google search would reveal something like [https://stackoverflow.com/questions/23660094/whats-the-difference-between-integer-class-and-numeric-class-in-r](https://stackoverflow.com/questions/23660094/whats-the-difference-between-integer-class-and-numeric-class-in-r) and we can see what R is doing.
+
+
+Back to the question at hand.  To describe the shape we run
+
+```{r}
+housing.data %>% ggplot(aes(x=price.1000))+geom_histogram(bins=10)
+```
+
+Here's where a bit of the art of statistics.  I chose 10 bins, but I could easily have picked a different number.  We want to ensure that the number of bins are large enough to group efficiently but small enough to show the structure of the data.  Here it would appear that the data are skewed positively (also called right skewed).
+
+## Problem 4
+
+The mean will over predict the price of many houses, as the data are skewed it may be better to use the median.
+
+## Problem 5
+
+The mean should be higher than the median, which we can check:
+
+```{r}
+xbar<-mean(housing.data$price.1000)
+xtilde<-median(housing.data$price.1000)
+xbar
+xtilde
+```
+
+Which matches our intuition
+
+## Problem 6
+
+We can calculate by hand:
+
+```{r}
+samp.var <- sum((housing.data$price.1000-xbar)^2)/(nrow(housing.data)-1)
+samp.sd <- sqrt(samp.var)
+samp.sd
+```
+
+Or we can rely on the built in function `sd()`
+
+```{r}
+sd(housing.data$price.1000)
+```
+The interpretation is on average our houses are 241,0000 from the mean
+
+## Problem 7
+Straight forward calculation
+
+```{r}
+639-xbar
+```
+
+So we see we would be \$ 230,938 from the correct price
+
+## Problem 8
+
+The residual for the first house is:
+
+```{r}
+all.resids<-housing.data$price.1000-xbar
+all.resids[1]
+```
+
+So we under predicted the price of the first house
+
+## Problem 9
+
+Here we have a vector called `all.resids` so let's take advantage of that to answer our question.  To do this we will buid a logical.  This returns true if our residual is positive, false if it is negative.
+
+```{r}
+pos.resid <- (all.resids>0)
+```
+
+Now we can just sum this up
+
+```{r}
+sum(pos.resid)
+```
+
+To find the falses we could do:
+```{r}
+length(pos.resid)-sum(pos.resid)
+```
+
+So 6 over predictions, 7 under predictions
+
+## Problem 10
+
+To see the association between square footage and price we can create a scatter plot
+
+```{r}
+housing.data %>% ggplot(aes(x=sqft,y=price.1000))+geom_point()
+```
+
+From the plot it would appear that as square footage increases, price also increases, but not always.
+
+## Problem 11
+
+From MA206, we can build a statistical model
+
+\begin{align*}
+& i=\mbox{House}\\
+& y_i = \mbox{Price of house }i\\
+& x_{1,i} = \mbox{Square footage of house }i\\
+y_{i} = \beta_0 + \beta_1 x_{1,i} + \epsilon_i
+\end{align*}
+
+Recalling our previous course, we can fit this using the `lm()` function in R
+
+```{r}
+house.lm<-lm(price.1000~sqft,data=housing.data)
+summary(house.lm)
+```
+
+So our estimates are: $\hat{\beta_0}= -59$, $\hat{\beta_1}= 0.21$, and $\hat{\sigma}=185$.  Note that $\hat{\sigma}$ is the standard error of the residuals.
+
+The intercept here is meaningless as it gives the price of a house with 0 sqft.  The slope means that a change in one sqft corresponds to an increase in price of 212 dollars. (Recall our response is price/1000)
+
+The standard error of the residuals for the first house can be found using:
+
+```{r}
+house.lm$residuals[1]
+```
+
+And the standard error of the residuals is smaller than before.
+
+## Problem 12
+
+This question is asking us to fit a seperate regression line for lake front and not lake front.  Essentially we are treating them as two different datasets.
+
+```{r}
+housing.data %>% ggplot(aes(x=sqft,y=price.1000,color=lake))+geom_point()+
+  geom_smooth(method='lm',se=FALSE,fullrange = TRUE)
+```
+
+## Problem 13
+
+For a tricky reason, this problem is actually not straight forward.  I'm going to answer it in a way that is slightly different then perhaps the approved solution (though I make the approved solution so...)  We need differing slopes and differing intercepts for our two groups, which suggests an interaction term in our statistical model.
+
+The complete model would be:
+
+\begin{align*}
+& i=\mbox{House}\\
+& y_i = \mbox{Price of house }i\\
+& x_{1,i} = \mbox{Square footage of house }i\\
+& x_{2,i} = 1\mbox{ If not lakefront, 0 otherwise}
+y_{i} = \beta_0 + \beta_1 x_{1,i} + \beta_2 x_{2,i} + \beta_3 x_{1,i} x_{2,i} + \epsilon_i
+\end{align*}
+
+Which we fit via:
+
+```{r}
+inter.lm<-lm(price.1000~sqft*lake,data=housing.data)
+summary(inter.lm)
+```
+
+Meaning, for lakefront houses our fitted model is $\hat{y_i}= 86.8+0.22 x_{1,i}$ and for not lakefront our fitted model is $\hat{y_i}= 58.11+0.085 x_{1,i}$
+
+## Problem 14
+
+Our first house is 2700 sq ft and is on the lakefront so the predicted price is $86.8+.22(2700)=680.8$ the actual value is 639
+
+## Problem 15
+
+The standard error of the residuals is now 49.5 so we have reduced it by quite a bit.
+
+## Problem 16
+
+To see if it is coonfounded we want to know whether increasing square footage also increases the probability a house is on the lakefront or not.  What we see here is out of our four biggest houses, three of them are on the lakefront and out of our four smallest houses three of them are not on the lakefront.  Therefore we certainly have the potential for their to be confounding.  Furthermore, from the output in problem 13 we see that both lakefront and square footage seem to impact price.
+
+Our diagram is:
+
+```{r}
+library(kableExtra)
+library(knitr)
+sv.diagram<-data.frame(Observed_variation_in=c("Housing Price"),explained_variation=c("Square Footage, and Lakefront"),unexplained_variation=c("Neighborhood, Number of Bedrooms, garage size"))
+
+kable(sv.diagram, "latex",booktabs = T)%>%
+  kable_styling(full_width = F)%>%
+  column_spec(2:3, width = "10em")
+```
+
+
+## Problem 17
+
+I would summarize by using the statistical model that includes location and home size, as this model explained more variance than the other models considered in the study. My conclusion is that location and home size has a positive impact on the home price - lake front properties are generally going to be more expensive and the larger the home on the lakefront will increase the property value. I would not be willing to generalize this study to a larger population of homes, as there are many other factors that could explainvariability in home prices, such as school districts, location to major cities, etc. In this study, home size and location are extremely likely to cause variation in home prices.
+
+## Problem 18
+
+Information about homes in other areas would be particularly useful to this study, as this study
+only accounts for two possible explanations of variations and is very specific to the Lake Macatawa area.
