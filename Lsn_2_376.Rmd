@@ -2,14 +2,14 @@
 title: "Lesson 2"
 author: "Nicholas Clark"
 output:
-  word_document: default
   pdf_document: default
+  word_document: default
   html_document:
     df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE)
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,fig.show="hide")
 ```
 
 In the United States, the 1963 Equal Pay Act requires that men and women be given equal pay for equal work and Title VII of the Civil Rights Act of 1964 prohibits discrimination on the basis of race, color, relgion, sex, and national origin.  How successful have these acts been?
@@ -195,3 +195,10 @@ Sources of variation diagram:
 
 \vspace{2.in}
 
+## Memorizing Levels
+
+1-20
+
+11 - Consider histogram, mean, standard deviation, median
+
+13 - Consider side by side boxplots
