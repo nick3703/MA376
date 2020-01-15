@@ -8,10 +8,10 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="show",fig.show="show")
 ```
 
-##Questions from previous exploration?
+## Admin
 
 \vspace{.3in}
 
@@ -27,7 +27,7 @@ A \textbf{double blind} study is:
 
 Why is this important?
 
-\vspace{.3in}
+\vspace{.5in}
 
 Our book talks about a study on store ratings and wants to determine whether a rating is influenced by exposure to a scent.  Are there ethical issues with this study?
 
@@ -44,11 +44,11 @@ y_i & = \mu + \epsilon_i
 
 What does $\epsilon_i$ represent in this model?
 
-\vspace{.3in}
+\vspace{1.3in}
 
 Are there any assumptions we are making on $\epsilon_i$?
 
-\vspace{.3in}
+\vspace{.5in}
 
 The book says that the fitted model is:
 
@@ -59,22 +59,48 @@ y_i &= 4.48 + \epsilon_i\\
 
 Note here I use the generic $F$ to stand for some distribution, I'm not making any distributional assumptions on $\epsilon_i$.  How did the book find $\hat{\mu}=4.48$ and the standard error of the residiuals as 1.27?
 
+\vspace{1.5in}
+
+What assumption are we making when we use this model?  What would our causal diagram look like?
+
 \vspace{.5in}
-
-Does this statistical model address the scientific question posed by the researchers?
-
-\vspace{.4in}
 
 What is the treatment variable?  Let's sketch out the sources of variation diagram
 
-\vspace{.4in}
+\vspace{1.4in}
+
+Our proposed diagram is:
+
+\vspace{1.in}
+
+We can visualize:
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+
+dat=read.table("http://www.isi-stats.com/isi2/data/OdorRatings.txt",header=T)
+
+dat %>% ggplot(aes(x=condition, y=rating,fill=condition)) + 
+  geom_violin(trim = FALSE)+
+  geom_dotplot(binaxis='y', stackdir='center')+
+  coord_flip()
+```
+
 
 A statistical model that could be used to address the scientific question is:
 
-\vspace{.5in}
+\vspace{1.5in}
+
+
+How could we fit this model?  Well, getting the estimates for $\mu_1$ and $\mu_2$ shouldn't be hard.
 
 ```{r}
-dat=read.table("http://www.isi-stats.com/isi2/data/OdorRatings.txt",header=T)
+dat %>% group_by(condition)%>%summarize(samp.mus=mean(rating),sds=sd(rating))
+
+```
+
+
+```{r}
 
 scent.model=lm(rating~0+condition,data=dat)
 summary(scent.model)
@@ -82,7 +108,7 @@ summary(scent.model)
 
 Note that the standard error from this output does not match the standard error given on the top of page 39.  Why do you think that is?  How could we match the standard error given on page 39?
 
-\vspace{.5in}
+\vspace{1.5in}
 
 Looking at the output, (ignoring p values for now), what appears to be happening?  How certain are we?  How could we be sure?
 
@@ -101,5 +127,6 @@ This is in our text, but it bears repeating: The goal of random assignment is to
 
 https://www.vox.com/science-and-health/2018/6/20/17464906/mediterranean-diet-science-health-predimed
 
+## Think - If our investigators wanted to know if there was a difference between `scent` and `noscent` what would we be testing in terms of our parameters?
 
-##Letter Game
+
