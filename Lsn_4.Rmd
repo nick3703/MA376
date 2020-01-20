@@ -8,7 +8,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="show",fig.show="hide")
 ```
 
 ##Questions from previous exploration?
@@ -18,13 +18,13 @@ knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig
 Notation:
 
 \begin{align*}
-j & = \mbox{group}\\
-i & = \mbox{observation}\\
-y_{i,j}& = \mbox{response from the }i\mbox{th observation from the }j\mbox{th group}\\
+i & = \mbox{group}\\
+j & = \mbox{observation}\\
+y_{i,j}& = \mbox{response from the }j\mbox{th observation from the }i\mbox{th group}\\
 \bar{y}& = \mbox{Overall sample mean}\\
-\bar{y}_j &= \mbox{Sample mean of the jth group}\\
+\bar{y}_i &= \mbox{Sample mean of the ith group}\\
 n &= \mbox{total sample size}\\
-n_j &= \mbox{group size of the jth group}
+n_i &= \mbox{group size of the ith group}
 \end{align*}
 
 From last class we had
@@ -59,11 +59,11 @@ As our book mentions, the $n-1$ is also the number of degrees of freedom in our 
 An alternative model is:
 
 \begin{align*}
-y_{i,j}&=\mu_j + \epsilon_{i,j}\\
+y_{i,j}&=\mu_i + \epsilon_{i,j}\\
 \epsilon_{i,j}&\sim \mbox{iid }F(0,\sigma)
 \end{align*}
 
-Note here we've put additional structure on $\mu$.  It would make sense to estimate $\hat{\mu_1}=\frac{1}{n_1}\sum_{i=1}^{n_i}y_{i,1}$ and $\hat{\mu_2}=\frac{1}{n_2}\sum_{i=1}^{n_i}y_{i,2}$.  Our Sum of square errors now is:
+Note here we've put additional structure on $\mu$.  It would make sense to estimate $\hat{\mu_1}=\frac{1}{n_1}\sum_{j=1}^{n_1}y_{1,j}$ and $\hat{\mu_2}=\frac{1}{n_2}\sum_{i=1}^{n_2}y_{2,j}$.  Our Sum of square errors now is:
 ```{r}
 group1 = scent.dat %>% filter(condition=="scent")%>%summarise(scent.mean=mean(rating))
 group2 = scent.dat %>% filter(condition=="noscent")%>%summarise(non.scent.mean=mean(rating))
@@ -90,7 +90,7 @@ In terms of our model parameters, our \textbf{effect size} is $\mu_1-\mu_2$ whic
 While the seperate means model is useful, our book also considers a model that looks like:
 
 \begin{align*}
-y_{i,j}&=\mu + \alpha_j + \epsilon_{i,j}\\
+y_{i,j}&=\mu + \alpha_i + \epsilon_{i,j}\\
 \epsilon_{i,j}\sim \mbox{iid }F(0,\sigma)
 \end{align*}
 
@@ -101,7 +101,7 @@ How is this different?  Can we fit this model?
 In R we can do:
 
 ```{r}
-contrasts(scent.dat$condition)=contr.treatment
+contrasts(scent.dat$condition)=contr.sum
 lm.mod=lm(rating~condition,data=scent.dat)
 summary(lm.mod)
 ```
@@ -134,14 +134,14 @@ If we want to use Rs default parameterization what are we looking at?
 
 In order to determine if the scents matter, we want to examine how much our group means vary from our overall means.  In other words, we want a measure of:
 
-$$\sum_{i,j}(\bar{y}_j-\bar{y})^2$$
-If this number is really big, what can we say about our effect size?
+$$\sum_{i,j}(\bar{y}_i-\bar{y})^2=n_j \sum_{i} (\bar{y_i}-\bar{y})^2$$
+
+
+This statistic is called the Sums of Squares due to Treatment, or Sums of Squares due to model for the two means model.  If this number is really big, what can we say about our effect size?. 
 
 \vspace{.4in}
 
-Note that the calculations in some cases can be extremely simplified as $n_1=n_2$ we must have $\bar{y}_1$ and $\bar{y}_2$ to be equadistant from $\bar{y}$, so we end up with $\sum_{i,j}(\bar{y}_j-\bar{y})^2=n_1 \hat{\alpha}_1^2+n_2 \hat{\alpha}_2^2$.  Now this doesn't always hold true, so remember what we are doing is $\sum_{i,j}(\bar{y}_j-\bar{y})^2$ and we will be fine.  Note here we must have $\alpha_1+\alpha_2=0$ so our degrees of freedom are 1.
-
-This calculation is called Sums of square due to model or SSM.
+Note that the calculations in some cases can be extremely simplified as $n_1=n_2$ we must have $\bar{y}_1$ and $\bar{y}_2$ to be equadistant from $\bar{y}$, so we end up with $\sum_{i,j}(\bar{y}_i-\bar{y})^2=n_1 \hat{\alpha}_1^2+n_2 \hat{\alpha}_2^2$.  Now this doesn't always hold true, so remember what we are doing is $\sum_{i,j}(\bar{y}_i-\bar{y})^2$ and we will be fine.  Note here we must have $\alpha_1+\alpha_2=0$ so our degrees of freedom are 1.
 
 The calculations we have done can be summarized as:
 
@@ -158,6 +158,7 @@ One measure of how well our model explains the variation is the oft-mis quoted $
 
 Another that we can compare is the effect size, or the differences in group means, compared to the standard error of ther residuals.  Again a picture:
 
-\vspace{.5in}
+\vspace{1.5in}
 
 
+If our model does a good job of explaining our data most of our variability will be due to the treatment we are applying or examinig. So if we look at the amount of variation that's remaining (SSE) and compare it to the SSM the ratio should be small.  Note that SST=SSM+SSE. 
