@@ -11,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="show",fig.show="hide")
 ```
 
-##Questions from previous exploration?
+## Questions from previous exploration?
 
 \vspace{.3in}
 
