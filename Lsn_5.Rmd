@@ -11,16 +11,18 @@ output:
 knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig.show="hide")
 ```
 
-##Questions from previous exploration?
+## What is a Statistic?
 
+\vspace{1.in}
 
+## Review
 Last class we fit the model:
 
 \begin{align*}
-j & = \mbox{Scent status}\\
-i & = \mbox{Student}\\
-y_{i,j}& = \mbox{Store rating from the }i\mbox{th observation exposed to the }j\mbox{th scent}\\
-y_{i,j} & = \mu + \alpha_j + \epsilon_{i,j}\\
+i & = \mbox{Scent status}\\
+j & = \mbox{Student}\\
+y_{i,j}& = \mbox{Store rating from the }j\mbox{th observation exposed to the }i\mbox{th scent}\\
+y_{i,j} & = \mu + \alpha_i + \epsilon_{i,j}\\
 \epsilon_{i,j} &\sim F(0,\sigma)
 \end{align*}
 
@@ -39,12 +41,12 @@ coef(scent.mod)
 \hat{\alpha}_{noscent} &= -0.645\\
 \end{align*}
 
-From here we also obtained SSTotal, $\sum_{i,j} \left(y_{i,j}-\bar{y}\right)^2$
+From here we also obtained SSTotal, $\sum_{i,j} \left(y_{i,j}-\bar{y}\right)^2$ which is also SSE from the null model
 
 ```{r}
 sum((scent.dat$rating-mean(scent.dat$rating))^2)
 ```
-Which can be decomposed into SSGroups (or SSModel) and SSError.  Recall SSE=$\sum_{i,j} \left(y_{i,j}-\hat{y_{i,j}}\right)^2$
+Which can be decomposed into SSTreatment (or SSModel) and SSError.  Recall SSE=$\sum_{i,j} \left(y_{i,j}-\hat{y_{i,j}}\right)^2$
 
 ```{r}
 sum((scent.dat$rating-scent.mod$fitted.values)^2)
@@ -57,6 +59,10 @@ sum((scent.mod$fitted.values-mean(scent.dat$rating))^2)
 ```
 
 So the amount of variation that the model explains is $\frac{SSM}{SST}\approx 0.26$
+
+
+## So what?
+
 
 But is it possible that scent actually doesn't explain the variation in the model?  What if we just got unlucky and randomly assigned people who like stores to the scent group and folks that despise shopping to the no scent group?
 
@@ -86,7 +92,7 @@ If we just got unlucky and assigned our folks who like stores to the scent data 
 
 \vspace{.3in}
 
-So, we want to get a feele for how likely is it that we just got unlucky.  If the null hypothesis was true than how we labled our students (scent or noscent wouldn't matter)
+So, we want to get a feel for how likely is it that we just got unlucky.  If the null hypothesis was true than how we labled our students (scent or noscent wouldn't matter)
 
 ```{r}
 head(scent.dat)
