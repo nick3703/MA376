@@ -8,9 +8,15 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Admin
+## Common Errors on Exploration 1
 
-## Status Check on Explorations
+### Writing out model as lm~0
+
+### Confounding definition
+
+### Confounding can still occur in an experiment by chance
+
+### Dealing with Factors in R
 
 ## Multiple Groups
 
@@ -65,10 +71,18 @@ Note here that $\mu$ is NOT the overall mean
 ```{r}
 mean(omega.df$omegaper)
 ```
-Why exactly this is is a bit beyond the scope of this course, but the one thing to note is that we don't have a nice neat balanced design, so it changes the meaning of our parameters a bit under the contr.sum.  What this value actually is the mean of the means
+
+What this value actually is the mean of the means
 ```{r}
 mean(group.means$mean)
 ```
+
+
+Why might we want to use the mean of the means?
+
+\vspace{.5in}
+
+
 To see how well our multiple group model fits the data we can see how much of our variation our model accounts for.
 
 To do this we first find SST, recall SST is:
@@ -169,5 +183,7 @@ We could also do:
 anova(omega.lm)
 ```
 
+
+Let's break down this table
 
 
