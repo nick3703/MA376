@@ -22,9 +22,6 @@ library(tidyverse)
 music.dat<-read.csv("Music.csv")
 music.dat %>% ggplot(aes(x=MusicType,y=Amount))+geom_boxplot()
 
-classical<-music.dat%>% filter(MusicType=="Classical")
-qqnorm(classical$Amount)
-qqline(classical$Amount)
 ```
 
 Can we make a conclusion about the research question based on this plot?
@@ -45,11 +42,11 @@ What is an appropriate statistic to use?
 
 Are our validity conditions met?
 
-\vspace{.5in}
+\vspace{.8in}
 
 Assuming yes, what is the distribution of our F Statistic?
 
-\vspace{.5in}
+\vspace{.8in}
 
 What are our conclusions?  Do they help the restaurant?
 
@@ -63,7 +60,7 @@ anova(lm.mod)
 
 Perhaps we want to say something more.  In this case we might want to conduct a \textbf{Post Hoc Test}.  Note that this is only permissible IF our F statistic is statistically significant.  Why?
 
-\vspace{.3in}
+\vspace{.8in}
 
 Our book forms the pairwise difference using the formula \textit{difference in means}$\pm$(multiplier)(SE residuals x $\sqrt{1/n_1+1/n_2}$).  It is obvious what $n_1$ and $n_2$ are, SE residuals is our estimate of $\sigma$ that is found from SSE/df  where df = $n-1-(groups-1)=n-groups$.  This can be found in the Residual standard error line of our lm output
 
@@ -79,15 +76,15 @@ Our book then forms each of the pairwise differences.  The multiplier is roughly
 ```{r}
 music.dat%>%group_by(MusicType)%>%summarise(avg=mean(Amount),num=n())
 
-(24.9-21.7)+2.7*2.85*sqrt(1/142+1/131)
+(21.9-21.7)+2*2.85*sqrt(1/142+1/131)
 
-(24.9-21.7)-2.7*2.85*sqrt(1/142+1/131)
+(21.9-21.7)-2*2.85*sqrt(1/142+1/131)
 ```
 
 
 This method is not generally the best though because our overall Type I error rate, or the experiment (or family wise) Type I error rate will not be $\alpha=.05$.  Each individual confidence interval will be 95 \% meaning if there's a 5 percent chance I've made an error for each contrast and I do 3 contrasts the overall probability I've made an error is:
 
-\vspace{.3in}
+\vspace{.8in}
 
 There's other methods such as Bonferronni corrections you might have heard about (or might here about) but R has a built in way to correct that changes the multiplier above.  This method is called Tukey's Honest Significant Difference or TukeyHSD.  It's a bit weird, but what we have to do is:
 
@@ -98,7 +95,7 @@ TukeyHSD(aov.obj)
 From here we can make a letters table:
 
 
-\vspace{.5in}
+\vspace{.8in}
 
 We can also find CIs for each individual mean.  This can be done in R but we have to be very very careful.
 
@@ -112,35 +109,43 @@ confint(music.lm2)
 
 In terms of our parameters,  what is going on here?  What one is right?
 
-\vspace{.5in}
+\vspace{.8in}
 
-To check we can again use the formula for our book $\bar{y_i }\pm \frac{\hat{\sigma}}{\sqrt{n_i}}$.  
+To check we can again use the formula for our book $\bar{y_i }\pm t_{\alpha/2,n-1}\frac{\hat{\sigma}}{\sqrt{n_i}}$.  
 
-\vspace{.5in}
+\vspace{.8in}
 
-What, in this formula, changes as $i$ gets bigger?
+What, in this formula, changes as $n$ gets bigger?  What does this mean for our confidence interval?
 
-\vspace{.3in}
+\vspace{.8in}
 
 In terms of our statistical model a confidence interval for the mean is a confidence interval for what?
 
-\vspace{.3in}
+\vspace{.8in}
 
 A prediction interval would be an interval for what?
 
-\vspace{.3in}
+\vspace{.8in}
 
 So if we want to form a prediction interval for a new observation can we use $\bar{y_i }\pm \frac{\hat{\sigma}}{\sqrt{n_i}}$?
 
-\vspace{.3in}
+\vspace{.8in}
 
 Where is our uncertainty coming from if we are making a prediction?
 
 
-\vspace{.5in}
+\vspace{.8in}
+
+What happens to this interval as $n_i \to \infty$?
+
+\vspace{.8in}
+
+If we want to form a prediction interval we want to be reasonably sure we have captured the possible values of $y_{new}$.  Obviously if $y$ is in our data set we know the value so we wouldn't want to predict.  In terms of our problem we would want to be able to say, with some level of certainty, not what the average tip would be, but rather how much the next person in the door will tip our staff.
 
 What can we tell our restauranteer?  If they play classical music give a prediction for tip they will receive.  
 
-\vspace{.5in}
+\vspace{.8in}
+
+
 
 Note the validity conditions on page 110 for prediction intervals.  Even if our validity conditions are met for using the F-test we might not meet the validity conditions for prediction intervals.  Why?
