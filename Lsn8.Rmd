@@ -1,7 +1,6 @@
 ---
 title: "Lsn 8"
 author: "Clark"
-date: "September 16, 2019"
 output: pdf_document
 ---
 
@@ -57,7 +56,7 @@ To see that we would need 17 people in each group.
 
 The same thing can be done with ANOVA tests using `library(pwr)` which must be installed.
 
-The function `pwr.anova.test` can then be used in a similar way.  The only tricky thing is that it relies on an effect size not given by $R^2$ but rather given by $f=\sqrt{R^2/(1-R^2)}$.  So for instance we have:
+The function `pwr.anova.test` can then be used in a similar way.  The only tricky thing is that it relies on an effect size not given by $R^2$ but rather given by $f=\sqrt{R^2/(1-R^2)}$.  This value is called Cohen's $f^2$, which is different than our F statistic.  For two samples there's a similar value called Cohen's $d$ statistic which is found via $\frac{\bar{x}_1-\bar{x}_2}{s}$.  Using Cohen's $f$ we can find power via:
 
 ```{r,warning=FALSE}
 library(pwr)
