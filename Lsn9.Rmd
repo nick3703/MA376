@@ -1,7 +1,6 @@
 ---
 title: "Lsn 9"
 author: "Clark"
-date: "September 16, 2019"
 output: pdf_document
 ---
 
@@ -16,7 +15,7 @@ Awhile back I was asked to consult on a project with DPE examining the surface t
 
 Their sources of variation diagram was:
 
-\vspace{1.5in}
+\vspace{1.7in}
 
 
 The model this used is:
@@ -41,11 +40,11 @@ summary(lm.mod)
 anova(lm.mod)
 ```
 
-\vspace{.5in}
+\vspace{.7in}
 
 What is our conclusion?
 
-\vspace{.5in}
+\vspace{.7in}
 
 ```{r}
 
@@ -55,11 +54,11 @@ GrassSand %>% ggplot(aes(x=Sled,y=Surface,group=Participantf,col=Surface))+
 
 What can we learn by looking at this plot?
 
-\vspace{.5in}
+\vspace{.7in}
 
 Let's modify our sources of variation diagram, from our plot what is a major source of variability that is not accounted for?:
 
-\vspace{1.5in}
+\vspace{1.7in}
 
 Let's write out a new statistical model:
 
@@ -67,11 +66,11 @@ Let's write out a new statistical model:
 
 Does our hypothesis we are testing change?
 
-\vspace{.5in}
+\vspace{.7in}
 
 Now we have two ways to approach this statistical question,  if we look at within subject, what happens if we take the difference of our two observations?
 
-\vspace{.5in}
+\vspace{.7in}
 
 These differences are typically analyzed using a paired t-test.  Now instead of our observations we are looking at our differences.  
 
@@ -102,8 +101,8 @@ full.lm.mod<-lm(Sled~Surface+Participantf,data=GrassSand)
 anova(full.lm.mod)
 ```
 
-In the ANOVA table we see that by adding a second factor (participants) what we actully have done is taken some of our unexplained variation (residuals) and now explained it through participant.  This makes the F statistic for Surface bigger because we are no longer comparing 103.392 to 55.56, but rather 13.392 to 6.57.  Note other things that happen:
+In the ANOVA table we see that by adding a second factor (participants) what we actully have done is taken some of our unexplained variation (residuals) and now explained it through participant.  This makes the F statistic for Surface bigger because we are no longer comparing 103.392 to 55.56, but rather 13.392 to 6.57.  Note other things that happen
 
 \vspace{1.in}
 
-We won't take the time to prove it in this class, but the $SSA \approx I\sum_{j=1}^J \hat{\alpha}_j^2$.  Likewise $SSB \approx J\sum \sum_{i=1}^I \hat{\beta}_i^2$  
+Sums of Squares Calculations:
