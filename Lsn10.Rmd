@@ -1,7 +1,6 @@
 ---
 title: "Lsn 10"
 author: "Clark"
-date: "September 16, 2019"
 output: pdf_document
 ---
 
