@@ -141,7 +141,7 @@ adj.effect %>% group_by(Surface) %>% summarise(means=mean(adj.effect),sd=sd(adj.
 Our block-adjusted F-statistic is:
 
 ```{r}
-adj.mod<-lm(Event ~ Surface+Participantf,data=adj.effect)
+adj.mod<-lm(adj.effect ~ Surface+Participantf,data=adj.effect)
 anova(adj.mod)
 ```
 
@@ -163,3 +163,33 @@ for(j in 1:M){
 Are validity conditions met for using F-distribution for our F statistic in this study?
 
 Why/why not?
+
+ANOVA Table without blocking, SS calculations:
+
+
+\vspace{2.in}
+
+```{r}
+anova(single.lm)
+```
+
+ANOVA Table with blocking, SS calculations:
+
+\vspace{2.in}
+
+```{r}
+full.lm<-lm(Event~Surface+Participantf,data=ACFT)
+anova(full.lm)
+```
+\vspace{1.in}
+
+So, should we always block?  Let's consider again the ANOVA table:
+
+
+\vspace{1.5in}
+
+If we create blocks and there are no true block effects, what happens to our F statistic?
+
+\vspace{1.in}
+
+In the best case scenario we have decreased the numerator of $MSE=\frac{SSE}{df}$ by enough to offset the loss of $df$ in the denominator.  As a rule of thumb before blocking you should, a-priori, think about the variation in our response and consider whether it makes logical sense that variation in our blocks would impact the variability in our response.  You cannot be wrong though if your statistical model reflects your experiment.  If you randomized within block you should build a model that contains blocks.
