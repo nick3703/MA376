@@ -19,7 +19,7 @@ Their sources of variation diagram was:
 
 Consider the following output
 ```{r}
-ACFT=read.csv("ACFT.csv")
+ACFT=read.csv("https://raw.githubusercontent.com/nick3703/MA376/master/ACFT.csv")
 ACFT<-ACFT %>% mutate(Participantf=as.factor(Participant))
 levels(ACFT$Surface)<-c("G","S","S","T")
 contrasts(ACFT$Surface)=contr.sum
