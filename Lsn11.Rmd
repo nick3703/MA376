@@ -1,23 +1,23 @@
 ---
 title: "Lesson 11"
 author: "Clark"
-date: "September 25, 2019"
 output:
-  word_document: default
   pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
 ```
 
-Recall that earlier in the course we discussed covariance, which is
+Recall that earlier in the course we discussed confounding, which is
 
-\vspace{.5in}
+\vspace{1.5in}
 
-In today's lesson (which adittedly is a bit dense) we are going to go through how covariance can make life difficult and impact our analysis of variance model.
+In today's lesson (which adittedly is a bit dense) we are going to go through how confounding can make life difficult and impact our analysis of variance model.
 
-The primary research quesiton we are going to explore si whether wages for blacks differ significantly fromw ages for non-boacks focusing on males who went to college and males who did not go to college.
+The primary research quesiton we are going to explore is whether wages for blacks differ significantly fromw ages for non-boacks focusing on males who went to college and males who did not go to college.
 
 The initial statistical model we consider is:
 
@@ -45,7 +45,9 @@ full.bets<-anova_model2$coefficients
 full.bets
 ```
 
-Again $\mu$ is NOT the population average, but the \textbf{effect average}.
+Again $\mu$ is NOT the population average, but the \textbf{effect average}.  Why might we want to do this
+
+\vspace{1.5in}
 
 Looking at page 175 obviously we might want to explain some of the unexplained variation using college as a factor.  The real issue becomes this:
 
@@ -80,7 +82,7 @@ Which seems like it should work, right?  This is just what we were doing before,
 
 \vspace{1.in}
 
-This is, in essence, covariance.  When we subtract off the "College effect" we are also subtracting off some part of the education effect.  Why?
+This is, in essence, confounding.  When we subtract off the "College effect" we are also subtracting off some part of the education effect.  Why?
 
 \vspace{1.in}
 
@@ -109,15 +111,41 @@ To reflect covariance in our model we draw our diagram like:
 \vspace{1.5in}
 
 Note that our statistical model doesn't change, but to fit this in R we need the `library(car)` installed and we can run:
-```{r}
+```{r,message=FALSE,warning=FALSE}
 library(car)
 contrasts(dat$race)=contr.sum
 contrasts(dat$education)=contr.sum
 anova_model2<-lm(wage.100~education+race,data=dat)
-anova.table<-Anova(anova_model2,type=2)
+anova.table<-Anova(anova_model2,type=3)
 anova.table
 ```
 
 An interesting note here is that the sums of squares no longer equal the total sums of squares.  The extra sums of squares can be thought of as variation that cannot be disentangled from education or race.  Our book calls this SScovariation, which I rather like.  It's variability that still exists but we cannot attribute to either factor so we basically shrug our shoulders.
+
+
+\newpage
+
+Type I Sums of Squares vs Type III Sums of Squares
+
+- Type I Calculations Make Sense
+
+\vspace{1.5in}
+
+- Type I prefereable when order matters (More concerned with one of the factors First)
+
+\vspace{1.5in}
+
+- Type I Order Matters!
+
+\vspace{.5in}
+
+- Type III all effects are conditional on \textit{everything else in the model}
+
+\vspace{1.in}
+
+- Type III not sample size dependent
+
+- Type III are NOT additive
+
 
 
