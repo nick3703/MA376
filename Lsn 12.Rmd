@@ -1,5 +1,5 @@
 ---
-title: "Lesson 6"
+title: "Lesson 12"
 author: "Clark"
 output: pdf_document
 ---
@@ -127,7 +127,7 @@ sum((dat$PI-mean(dat$PI))^2)
 ```
 So, by hand, we can fill out our ANOVA table:
 
-\vspace{1.in}
+\vspace{2.in}
 
 Assuming our validity conditions are met, both of our F statistics have what distribution?
 
@@ -157,3 +157,48 @@ dat.fitted <-dat %>%mutate(resid=PI-effects.mod$fitted.values)
 Plot the residuals vs. fitted and histogram of the residuals.  Why?
 
 \vspace{.5in}
+
+Our fitted model here can be written as:
+
+
+\vspace{1.in}
+
+Note that because this is a balanced design and there is no confounding between our two explanatory variables we know that the fitted model for endorser only is:
+
+\vspace{1.in}
+
+In reporting our results perhaps we want to just look at a 95\% CI for the difference between FloJo and Roseanne.  The statistic we would be interested in here is:
+
+
+\vspace{1.in}
+
+To build a 95\% CI we would do:
+
+\vspace{1.in}
+
+This, therefore, requires us to estimate $\hat{\sigma}$.  From our ANOVA table we note that the SE of our residuals is the same thing as the MSE.  In otherwords, one estimator for $\sigma$ is the square root of MSE.  Our ANOVA table gives an MSE of 19.85, so $\hat{\sigma}=\sqrt{19.85}=4.455$.  
+
+Therefore our approx. 95\% CI would be 
+
+```{r}
+gr.avg<-dat %>% group_by(Endorser)%>%summarize(avg=mean(PI))
+(gr.avg$avg[1]-gr.avg$avg[2])-2*4.455*sqrt(2/80)
+(gr.avg$avg[1]-gr.avg$avg[2])+2*4.455*sqrt(2/80)
+
+```
+
+Note what would happen if we used the endorser only model.  
+
+```{r}
+end.only<-lm(PI~Endorser,data=dat)
+anova(end.only)
+```
+
+Now our estimate of $\hat{\sigma}$ would be $\sqrt{21.967}=4.687$.  So our CI becomes:
+
+```{r}
+(gr.avg$avg[1]-gr.avg$avg[2])-2*4.687*sqrt(2/80)
+(gr.avg$avg[1]-gr.avg$avg[2])+2*4.687*sqrt(2/80)
+```
+
+So the key point  here is that even though our estimates of the effect of endorser doesn't change as we move from the multiple means to the full factorial model, we are able to more precisely estimate the effects as our uncertainty of the effect becomes smaller.  
