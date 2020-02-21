@@ -143,3 +143,4 @@ TukeyHSD(aov(Peroxide ~ Temperaturef*AirVelocityf,data=pistachio.fac))
 #Note * gives all main effects and interactions
 ```
 
+For different combinations, our fitted models are:
