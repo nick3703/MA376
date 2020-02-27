@@ -15,7 +15,8 @@ Let's reconsider the Salary Discrimination dataset
 
 
 ```{r}
-salary.dat<-read.table("http://www.isi-stats.com/isi2/data/Wages.txt",header=T)
+salary<-read.table("http://www.isi-stats.com/isi2/data/Wages.txt",header=T)
+salary.dat<-salary%>%mutate(wage=wage/100)
 ```
 
 Instead of looking at College educated vs not college educated, we now consider the full dataset.
@@ -28,18 +29,17 @@ gr.means=salary.dat%>%group_by(educ,race)%>%summarize(mean.salary=mean(wage))
 
 What do we see?
 
-```{r}
+```{r,eval=FALSE}
 gr.means$educ<-factor(gr.means$educ,levels=c("belowHS","HS","college","beyondCollege"))
 gr.means %>% ggplot(aes(x=educ,y=mean.salary,color=race))+
   geom_line(aes(group=race),lwd=2)+geom_point()
 ```
 
-\newpage
 A statistical model:
 
 \vspace{2.in}
 
-ANOVA table:
+Shell ANOVA table:
 
 \vspace{1.5in}
 
@@ -55,7 +55,11 @@ Getting the fits is a bit of a pain but we can do it:
 
 \vspace{2.in}
 
-To fit the ANOVA model we note that we are now interested in Type III Sums of squares.
+To fit the ANOVA model we note that we are now interested in Type III Sums of squares.  Why?
+
+\vspace{.5in}
+
+
 
 
 ```{r}
@@ -63,4 +67,35 @@ library(car)
 Anova(inter.lm,type=3)
 ```
 
-What does this mean?
+Why are there 3 df for education and the interaction?
+
+\vspace{.5in}
+
+Consider the ANOVA table without the interaction
+
+```{r}
+ no.inter.lm<-lm(wage~race+educ,data=salary.dat)
+Anova(no.inter.lm,type=3)
+```
+
+If we look at the Residuals line the Sum of Squares went from 448727 to 448891, or a difference in 164 which might make sense, but look at what happens to SS race and ss education.  This suggests that the interaction term is confounded with race and education.  Does this make sense?
+
+\vspace{1.in}
+
+Ultimately, what we wanted to know though is that controlling for education is there a difference in wages.  To get at this we can look at the pairwise comparisons.  Or in otherwords, recall that the model with an interaction term is the same as the multiple means model:
+
+\vspace{1.in}
+
+This allows us to answer questions such as: For individuals with a College degree is there a difference in mean weekly wages for blacks and nonblacks.
+
+```{r}
+pair.diff<-TukeyHSD(aov(wage~race*educ,data=salary.dat))
+pair.diff$`race:educ`[20:25,]
+```
+
+Note if we fit the model without an interaction term we cannot address this question directly.  We see if we run the pairwise comparisons we get:
+
+```{r}
+pair.diff2<-TukeyHSD(aov(wage~race+educ,data=salary.dat))
+pair.diff2
+```
