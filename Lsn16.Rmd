@@ -103,7 +103,7 @@ Note that the sums of squares are higher under this model.  Why?
 
 However, the SE of the residuals is smaller.  When we use a regression model vs a seperate means model we are making a tradeoff.  We are actually building a simpler model, but hoping that the additional complexity a multiple means model provides minimal difference in explaining variability.  \textbf{All things being equal we always prefer a simpler model}.  If we have two models that have similar SSError values, choose the model that uses fewer degrees of freedom if you don't have science to save you.
 
-To put this another way, previously if we had $\mu$, $\alpha_1$ and $\alpha_2$ we automatically knew $\alpha_3$ (why?).  Now, if we know one of our means and $\beta_0$ we know all of our other means.
+To put this another way, previously if we had $\mu$, $\alpha_1$ and $\alpha_2$ we automatically knew $\alpha_3$ (why?).  Now, if we know one of our means and $\beta_1$ we know all of our other means.
 
 ```{r}
 grape %>% ggplot(aes(x=Ethanol,y=PC))+geom_point()+
