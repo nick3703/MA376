@@ -1,0 +1,145 @@
+---
+title: "Lesson 18"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=5,fig.height=3)
+library(tidyverse)
+```
+
+## Admin
+
+Recall that a simple linear regression model is written as:
+
+\vspace{1.in}
+
+And it explains how the variability in a quantitative outcome is explained through a quantitative explanatory variable.  Often times though, we have multiple explanatory variables.  For instance, we previously had models where we had two categorical explanatory variables:
+
+\vspace{1.in}
+
+But let's consider housing prices.  It makes sense that the variability in prices could be explained through the square footage of the house.  Why couldn't we use an ANOVA model for this?
+
+\vspace{.5in}
+
+Using square footage we could write:
+
+\vspace{.5in}
+
+Fitting the model is then done through:
+
+```{r}
+house.dat<-read.table("http://www.isi-stats.com/isi2/data/housing.txt",header=T)
+house.dat<- house.dat %>% mutate(price=price.1000)%>% select(-price.1000)
+sqft.lm<-lm(price~sqft,data=house.dat)
+summary(sqft.lm)
+anova(sqft.lm)
+
+```
+
+What are we testing with the two tests above?
+
+
+\vspace{.5in}
+
+Remember here the choices of using an ANOVA test or using the output of the linear regression model is a choice in using the F statistic or the $\hat{\beta}_1$ statistic.  Either way, we have validity conditions.
+
+```{r}
+fit.house <- house.dat %>% mutate(resids=sqft.lm$residuals,preds=sqft.lm$fitted.values)
+fit.house %>% ggplot(aes(x=preds,y=resids,color=lake))+geom_point()
+```
+
+What do we notice here?  Are we concerned?
+
+\vspace{.5in}
+
+If we want to see the effect of being a lakefront house or the effect of being a not lake front we could calculate
+
+```{r}
+fit.house %>% group_by(lake)%>%summarize(mean=mean(resids))
+```
+
+However, our analysis is still not entirely straight forward, because if we know whether a house is lake front or not lakefront do we know anything about the square footage of the house?
+
+```{r}
+fit.house %>% group_by(lake)%>%summarize(mean=mean(sqft))
+```
+
+Note here I'm going to deviate slightly from the text.  One way to adjust for one of the vairables that's in our model is to consider the statistical model for lakefront and price:
+
+\vspace{.5in}
+
+If we want to adjust for lakefront we would do:
+
+\vspace{.5in}
+```{r}
+contrasts(house.dat$lake)=contr.sum
+lake.lm<-lm(price~lake,data=house.dat)
+coef(lake.lm)
+```
+
+Thus we can adjust by adding 197.2 to every nonlakefront house and subtracting 197.2 to every lakefront house
+
+```{r}
+house.dat.mod<-house.dat%>%mutate(price=ifelse(lake=="lakefront",price-197.2,price+197.2))
+
+mod.lm<-lm(price~sqft,data=house.dat.mod)
+coef(mod.lm)
+```
+
+Note that this is slightly different then what the book gives, the reason here is the meaning of $\mu$ vs $\beta_0$ when we have unbalanced design.  Recall that when we were unbalanced $\mu$ wasn't the overall mean, but rather the mean of the means.  This means when we built our model above and subtracted off the effects of lakefront or not lakefront we are left with $\mu+\epsilon_{i,j}$, which is fine, but that $\mu$ isn't the $\mu$ that we want for square footage...
+
+So let's do this another way.  Instead of subtracting off just the effects, let's subtract off everything except the unexplained varation.
+
+```{r}
+house.dat.mod<-house.dat%>%mutate(lake.adj.price=lake.lm$residuals)
+mod.lm<-lm(lake.adj.price~sqft,data=house.dat.mod)
+coef(mod.lm)
+```
+So not quite what our book has, but if we now add back $\mu$, which is 408 to the intercept we get 110, which is what our book has.
+
+The bottom line is this, to adjust for effects, fit a model and regress the new, additional variable on the residuals.  A plot of this is called and added variable plot and is implimented in `library(car)` using `avPlot` 
+```{r}
+library(car)
+full.lm<-lm(price~lake+sqft,house.dat)
+avPlots(full.lm)
+```
+
+Note that these values are centered, which we'll talk about later, but the bottom line is we are adjusting both square feet and price by lake effect and determining whether after accounting for lake effect is there still a relationship between square feet and price.  As our book points out, these are useful if you want to visually explore whether a new explanatory variable explains additional variation.
+
+Here we might decide that square feet does explain variation, so it makes sense to write a new model as:
+
+\vspace{1.in}
+
+Up to now we have been using effect coding as is natural for ANOVA, this was done by setting `contrasts(house.dat$lake)=contr.sum` when we do this we are saying $x_{2,i}=-1$ if observation $i$ is lake front, $-1$ otherwise.  Naturally R uses indicator variables instead, $x_{2,i}=1$ if lakefront, $0$ otherwise.  As explained previously, it doesn't really matter.  Here we'll stick with effect coding.
+
+```{r}
+summary(full.lm)
+```
+What are we testing here?
+
+\vspace{.5in}
+
+What is the fitted model for lakefront?
+
+\vspace{.5in}
+
+What is the fitted model for not lakefront?
+
+\vspace{.5in}
+
+As we see in the fitted models what we have essentially done is fit two lines with the same slope but different intercepts
+
+```{r}
+Anova(full.lm,type=2)
+```
+
+What is being tested here?  Why do we need `type=2`?
+
+\vspace{.5in}
+
+```{r}
+par(mfrow=c(1,2))
+plot(full.lm,which=c(1:2))
+```
