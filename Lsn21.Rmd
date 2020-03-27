@@ -1,5 +1,5 @@
 ---
-title: "Lsn 21"
+title: "Lsn 21 - 2020"
 author: "Clark"
 output: pdf_document
 ---
@@ -126,7 +126,7 @@ Note here our intercept actually means something.
 \vspace{.5in}
 
 Let's see this:
-```{r}
+```{r,message=FALSE,warning=FALSE}
 #install.packages("p3d", repos="http://R-Forge.R-project.org")
 library(p3d)
 Plot3d(std.lm)
