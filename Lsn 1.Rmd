@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="hide",fig
 
 # Contact Information
 
-LTC Nick Clark
+COL Nick Clark
 
 nicholas.clark@westpoint.edu
 
