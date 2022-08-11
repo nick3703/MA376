@@ -17,17 +17,13 @@ COL Nick Clark
 
 nicholas.clark@westpoint.edu
 
-Thayer Hall Room 226B (Back room, just keep going back...)
-
-845-938-0267
-
-Test
+Thayer Hall Room 229
 
 # Course Overview
 
 \textit{Applied } Statistics
 
--Learn Statistics by doing
+-Course Text/Videos
 
 -Hands on/interactive
 
@@ -39,7 +35,8 @@ Test
 
 # Introductions
 
-# Getting started with R studio/knitr
+# DAW, Section Marcher Role
+
 
 # Berkely Admissions Data
 
@@ -56,7 +53,7 @@ berkley.data<-read.table("http://www.isi-stats.com/isi2/data/Berkeley.txt",heade
 
 Observational Unit:
 
-\vspace{.5in}
+\vspace{1in}
 
 Response Variable:
 
@@ -85,15 +82,14 @@ library(ggmosaic)
 ggplot(data=no.program)+
   geom_mosaic(aes(x=product(Accepted,Sex),fill=Accepted))
 ```
-What's your thoughts?
-
+What is the explanatory variable? Are we convinced?
 \vspace{.5in}
 
 What would the mosaic plot look like if sex was not associated with acceptance?
 
 \vspace{.5in}
 
-What other variables might help us predict whether or not someone would be accepted?
+What other explanatory variables might help us predict whether or not someone would be accepted?
 
 \vspace{.4in}
 
@@ -121,9 +117,8 @@ What else could contribute to an admissions decision other than sex and program?
 
 Sources of Variation Diagram:
 
-\vspace{1.in}
+\vspace{3.in}
 
-\newpage
 
 Six Steps of a statistical investigation
 
@@ -145,7 +140,7 @@ Six Steps of a statistical investigation
 
 Did we do this with the Berkley Data?  What would you tell the college administrators?
 
-\vspace{4.in}
+\vspace{3.in}
 
 
 Let's brainstorm how to write a statistical model for the Berkley data
