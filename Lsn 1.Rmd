@@ -147,4 +147,6 @@ Let's brainstorm how to write a statistical model for the Berkley data
 
 
 
+\vspace{3.in}
 
+How would we know if our model is doing a 'good' job?

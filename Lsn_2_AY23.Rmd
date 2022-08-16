@@ -3,14 +3,136 @@ title: "Lesson 2"
 author: "Nicholas Clark"
 output:
   pdf_document: default
-  word_document: default
   html_document:
     df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,fig.show="hide")
+knitr::opts_chunk$set(echo = TRUE,warning=FALSE,message=FALSE,results="show",fig.show="show")
 ```
+
+## Admin
+
+\vspace{.3in}
+
+The begining of our text focuses on experiments vs. observational studies.  Why is this important?
+
+\vspace{.3in}
+
+At West Point, as well as at most universities, prior to conducting an experiment, your \textbf{study protocol} must be reviewed by an Institutional Review Board or IRB.  The point of the IRB is to protect the rights of the subjects of a study as well as to ensure that inferences made from the study are statistically valid.
+
+A \textbf{double blind} study is:
+
+\vspace{.4in}
+
+Why is this important?
+
+\vspace{.5in}
+
+Our book talks about a study on store ratings and wants to determine whether a rating is influenced by exposure to a scent.  Are there ethical issues with this study?
+
+\vspace{.3in}
+
+
+The first model they consider is
+
+\begin{align*}
+i &= \mbox{ Student}\\
+y_i & = \mbox{rating of student }i\\
+y_i & = \mu + \epsilon_i
+\end{align*}
+
+What is the sources of variation diagram associated with this model?
+
+\vspace{2.in}
+
+
+What does $\epsilon_i$ represent in this model?
+
+\vspace{1.3in}
+
+Are there any assumptions we are making on $\epsilon_i$?
+
+\vspace{.5in}
+
+The book says that the fitted model is:
+
+\begin{align*}
+y_i &= 4.48 + \epsilon_i\\
+\epsilon_i & \sim F(0,1.27)
+\end{align*}
+
+Note here I use the generic $F$ to stand for some distribution, I'm not making any distributional assumptions on $\epsilon_i$.  How did the book find $\hat{\mu}=4.48$ and the standard error of the residiuals as 1.27?
+
+\vspace{1.5in}
+
+What assumption are we making when we use this model?  What would our causal diagram look like?
+
+\vspace{.5in}
+
+What is the treatment variable?  Let's sketch out the sources of variation diagram
+
+\vspace{1.4in}
+
+Our proposed diagram is:
+
+\vspace{1.in}
+
+We can visualize:
+
+```{r,warning=FALSE,message=FALSE}
+library(tidyverse)
+
+dat=read.table("http://www.isi-stats.com/isi2/data/OdorRatings.txt",header=T)
+
+dat %>% ggplot(aes(x=condition, y=rating,fill=condition)) + 
+  geom_violin(trim = FALSE)+
+  geom_dotplot(binaxis='y', stackdir='center')+
+  coord_flip()
+```
+
+
+A statistical model that could be used to address the scientific question is:
+
+\vspace{1.5in}
+
+
+How could we fit this model?  Well, getting the estimates for $\mu_1$ and $\mu_2$ shouldn't be hard.
+
+```{r}
+dat %>% group_by(condition)%>%summarize(samp.mus=mean(rating),sds=sd(rating))
+
+```
+
+
+```{r}
+
+scent.model=lm(rating~0+condition,data=dat)
+summary(scent.model)
+```
+
+Note that the standard error from this output does not match the standard error given on the top of page 39.  Why do you think that is?  How could we match the standard error given on page 39?
+
+\vspace{1.5in}
+
+Looking at the output, (ignoring p values for now), what appears to be happening?  How certain are we?  How could we be sure?
+
+\vspace{.5in}
+
+What could be a confounding variable for this study?
+
+\vspace{.5in}
+
+The most important part of thinking of confounding is given in figure 1.1.5.
+
+\vspace{.5in}
+
+This is in our text, but it bears repeating: The goal of random assignment is to reduce the chances of there being any confounding variables in the study. By creating groups that are expected to be similar with respect to all variables (other than the treatment variable of interest) that may impact the response, random assignment attempts to eliminate confounding. A key consequence of not having variables confounded with the treatment variable in a randomized experiment is the potential to draw cause-and-effect conclusions between the treatment variable and the response variable.
+
+
+https://www.vox.com/science-and-health/2018/6/20/17464906/mediterranean-diet-science-health-predimed
+
+## Think - If our investigators wanted to know if there was a difference between `scent` and `noscent` what would we be testing in terms of our parameters?
 
 In the United States, the 1963 Equal Pay Act requires that men and women be given equal pay for equal work and Title VII of the Civil Rights Act of 1964 prohibits discrimination on the basis of race, color, relgion, sex, and national origin.  How successful have these acts been?
 
@@ -18,14 +140,14 @@ WageRace contains observations from 1987 for a sample of 25,632 males between th
 
 Primary research question is whether wages for blacks differ significantly from wages for non-blacks?
 
-```{r}
+```{r, eval=FALSE}
 library(tidyverse)
 wage.dat<-read.table("http://www.isi-stats.com/isi2/data/Wages.txt",header=T)
 ```
 
 Identify the observational units in the study.  How many are there?
 
-```{r}
+```{r, eval=FALSE}
 nrow(wage.dat)
 #head(wage.dat) This gives the first couple of entries
 ```
@@ -34,7 +156,7 @@ Is the wages variable a quantitative or categorical variable?
 
 \vspace{.5in}
 
-```{r}
+```{r, eval=FALSE}
 ggplot(wage.dat,aes(x=wage))+geom_histogram(bins=100)
 ggplot(wage.dat,aes(y=wage))+geom_boxplot()+coord_flip()
 ```
@@ -68,7 +190,7 @@ Which variable is the explanatory variable?  Which is the response variable?
 Do you think the explanatory variable explains some variation in the response variable?  Do you think it explains all of the variation in the response variable?  Why or why not?
 
 \vspace{.5in}
-```{r}
+```{r, eval=FALSE}
 ggplot(wage.dat,aes(y=wage,x=race))+geom_boxplot()+coord_flip()
 
 wage.dat%>%group_by(race)%>%
@@ -78,7 +200,7 @@ wage.dat%>%group_by(race)%>%
 Consider whether there appears to be an association between wage and race:  Does the wage distribution differ substantially between blacks and non-blacks?  What is the difference in the mean weekly wages?  Can we conclude wage discrimination?
 
 \vspace{.5in}
-```{r}
+```{r, eval=FALSE}
 ggplot(wage.dat,aes(y=wage,x=educ))+geom_boxplot()+coord_flip()
 wage.dat%>%group_by(educ)%>%
   summarise(n=n(),mean=mean(wage),StDev=sd(wage),Minimum=min(wage),Median=median(wage),Maximum=max(wage))
@@ -94,7 +216,7 @@ Describe the association between education and wage.  Is it as you would have pr
 
 What would need to be true for education level to provide an alternative explanation for why non-blacks in this sample tended to earn more than blacks?
 
-```{r}
+```{r, eval=FALSE}
 ggplot(wage.dat,aes(y=wage,x=educ,fill=race))+geom_boxplot()+coord_flip()
 wage.dat%>%group_by(educ,race)%>%
   summarise(mean=mean(wage),StDev=sd(wage))
@@ -120,25 +242,25 @@ Sources of variation diagram:
 
 \vspace{1.in}
 
-```{r}
-birthwt.dat<-read.csv("births.csv")
+```{r, eval=FALSE}
+birthwt.dat<-read.table("http://www.isi-stats.com/isi2/data/births.txt",header=T,fill=T)
 ```
 
 Explore:
 
-```{r}
+```{r, eval=FALSE}
 ggplot(aes(x=weight),data=birthwt.dat)+geom_histogram(bins=100)
 ```
 
 Filter out the unknowns
 
-```{r}
+```{r, eval=FALSE}
 birthwt.clean<-birthwt.dat %>% filter(weight < 8166)
 ggplot(aes(x=weight),data=birthwt.clean)+geom_histogram(bins=100)
 ```
 
 summary statistics
-```{r}
+```{r, eval=FALSE}
 birthwt.clean%>%summarise(N=n(),Mean=mean(weight),StDev=sd(weight),Min=min(weight),Max=max(weight))
 ```
 
@@ -152,7 +274,7 @@ The statistical model would be:
 
 A residual is the value $y_i - \hat{y}_i$ for $i =1,\cdots,n$.  We can find the residuals two different ways:
 
-```{r}
+```{r, eval=FALSE}
 birthwt.resid<-birthwt.clean%>% mutate(resid=weight-mean(weight))%>%select(resid)
 ggplot(aes(x=resid),data=birthwt.resid)+geom_histogram(bins=100)
 
@@ -163,10 +285,10 @@ What is going on?  Have we explained any variation?
 
 \vspace{.5in}
 
-```{r}
-ggplot(aes(x=weight,color=full.term),data=birthwt.clean)+geom_histogram(fill="white", alpha=0.5, position="identity")
+```{r, eval=FALSE}
+ggplot(aes(x=weight,color=full),data=birthwt.clean)+geom_histogram(fill="white", alpha=0.5, position="identity")
 
-birthwt.clean%>%group_by(full.term)%>%
+birthwt.clean%>%group_by(full)%>%
   summarise(N=n(),Mean=mean(weight),StDev=sd(weight),Min=min(weight),Max=max(weight))
 ```
 
@@ -176,17 +298,17 @@ Our predicted model becomes:
 \vspace{.5in}
 
 Standard error:
-```{r}
+```{r, eval=FALSE}
 
-model<-lm(weight~0+full.term,data=birthwt.clean)
+model<-lm(weight~0+full,data=birthwt.clean)
 summary(model)
 ```
 
 Does Mom's BMI impact weight?
 
-```{r}
+```{r, eval=FALSE}
 birthwt.bmi<-birthwt.clean%>%filter(mom.BMI < 90)
-model<-lm(weight~0+full.term*mom.BMI,data=birthwt.bmi)
+model<-lm(weight~0+full*mom.BMI,data=birthwt.bmi)
 summary(model) #I think there's an error in book
 
 ```
@@ -194,5 +316,4 @@ summary(model) #I think there's an error in book
 Sources of variation diagram:
 
 \vspace{2.in}
-
 

@@ -1,5 +1,5 @@
 ---
-title: "Lesson 3"
+title: "Lesson 2"
 author: "Nicholas Clark"
 output:
   pdf_document: default
@@ -41,6 +41,11 @@ i &= \mbox{ Student}\\
 y_i & = \mbox{rating of student }i\\
 y_i & = \mu + \epsilon_i
 \end{align*}
+
+What is the sources of variation diagram associated with this model?
+
+\vspace{2.in}
+
 
 What does $\epsilon_i$ represent in this model?
 
