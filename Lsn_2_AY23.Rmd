@@ -1,5 +1,5 @@
 ---
-title: "Lesson 2"
+title: "\\vspace{-1.05in}Lesson 2"
 author: "Nicholas Clark"
 output:
   pdf_document: default
@@ -111,7 +111,7 @@ scent.model=lm(rating~0+condition,data=dat)
 summary(scent.model)
 ```
 
-Note that the standard error from this output does not match the standard error given on the top of page 39.  Why do you think that is?  How could we match the standard error given on page 39?
+Note that the standard error from this output does not match the standard error given on the top of page 39.  Why do you think that is?  How could we match the standard error given on page 38?
 
 \vspace{1.5in}
 
@@ -309,7 +309,7 @@ Does Mom's BMI impact weight?
 ```{r, eval=FALSE}
 birthwt.bmi<-birthwt.clean%>%filter(mom.BMI < 90)
 model<-lm(weight~0+full*mom.BMI,data=birthwt.bmi)
-summary(model) #I think there's an error in book
+summary(model) 
 
 ```
 
