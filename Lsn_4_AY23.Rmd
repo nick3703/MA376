@@ -222,8 +222,8 @@ stat.se = SSE/(n1+n2-2)*sqrt(1/n1+1/n2)
 ```
 
 
-Now that we have our results we can conduct step 5, formulate conclusions, and step 6, look back and ahead.  Look very carefully at pages 72 and 73 to see how our book makes a conclusion.  What I really like is the last sentence, "The scent model explained 26 \% of the variability in the ratings, probably meaninful enough for a store manager to care as this corresponds to about a 1 point increase on a seven point scale"
+Now that we have our results we can conduct step 5, formulate conclusions, and step 6, look back and ahead.  Look very carefully at page 65 to see how our book makes a conclusion.  What I really like is the last sentence, "The scent model explained 26 \% of the variability in the ratings, probably meaninful enough for a store manager to care as this corresponds to about a 1 point increase on a seven point scale"
 
-Note the CI on page 72 of our text is wrong.  It should be multiplied by 2.013 not 2.103.
+Note the CI on page 65 of our text is wrong.  It should be multiplied by 2.013 not 2.103.
 
 ## Exploration
