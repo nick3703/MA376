@@ -1,5 +1,5 @@
 ---
-title: "Lesson 7"
+title: "\\vspace{-1.05in}Lesson 6 - AY23"
 author: "Clark"
 output: pdf_document
 ---
@@ -15,7 +15,9 @@ Putting it all together.
 
 A British study (North, Shilcock, Hargreaves, 2003) examined whether the type of background music playing in a restaurant ffected the amount of money that diners spent on their meals.  The researchers asked a restaurant to alternate silence, popular music, and classical music on successive nights over 18 days.  Each type of music was played for six nights. 
 
-What are the researchers research question?
+What is the researchers research question?
+
+\vspace{1.in}
 
 ```{r,warning=FALSE,message=FALSE}
 library(tidyverse)
@@ -33,6 +35,10 @@ What is our sources of variation diagram?
 \vspace{1.in}
 
 What is our statistical model?
+
+\vspace{1.in}
+
+In terms of our statistical model, what hypothesis are we trying to test to answer the research question?
 
 \vspace{1.in}
 
