@@ -1,0 +1,80 @@
+---
+title: "Lsn_7_AY23"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Admin
+
+## Power
+
+Recall, in MA206 we tested Hypothesis such as:
+
+$H_0: \mu = \mu_0$ vs $H_a: \mu \neq \mu_0$
+
+Assuming that $H_0$ is true, we created a standardized statistic:
+
+$$ t= \frac{\bar{X}-\mu_0}{s/\sqrt{n}}$$
+
+Which looks like:
+
+\vspace{1.5in}
+
+Using $\alpha=0.05$ our \textit{Rejection Region} can be generated, which gives the values of $t$ that we would conclude $\mu \neq \mu_0$ for.  Note that if $\mu = \mu_a$ we \textit{should} reject $H_a$, however there is a chance that we will not:
+
+\vspace{1.5in}
+
+This region gives the probability of committing a Type-II error for $\mu=\mu_a$.  Statistical power is 1-P(Type-II error) or the probability that the researchers find evidence for the alternative hypothesis when the alternative hypothesis is true.
+
+Note that in order to actually find Power or Type-II error we need to specify a value of $\mu_a$.  Going back to our picture we see:
+
+\vspace{1.5in}
+
+So the value chosen for $\mu_a$ impacts Power, another thing that impacts Power is $n$.
+
+\vspace{1.5in}
+
+For a two-sample or one-sample t-test, finding power in R is straight forward with the command `power.t.test`.  Here we have to input $n$, $\Delta=|\mu_0-\mu_a|$ which can be thought of as how big of an effect do we want to observe, $s$, and/or power.  Note that one of these must be blank and is solved for.  For instance, if we want to observe an effect of 1 and we assume $s=1$, and we have $n=10$ observations for group and we are testing $H_0: \mu_1 = \mu_2$ vs $H_a: \mu_1 \neq \mu_2$ we can run
+```{r}
+
+power.t.test(n=10,delta=1,sd=1,power = NULL,type="two.sample",
+             alternative="two.sided")
+```
+
+And we see that the power associated with this test is 0.56, or the probability of committing a Type-II error in this instance is 0.44.  If we wwant to determine how big of a sample we would need to have 80 \% power we would run:
+
+```{r}
+
+power.t.test(n=NULL,delta=1,sd=1,power=0.8,type="two.sample",
+             alternative="two.sided")
+```
+To see that we would need 17 people in each group.  
+
+The same thing can be done with ANOVA tests using `library(pwr)` which must be installed.
+
+The function `pwr.anova.test` can then be used in a similar way.  The only tricky thing is that it relies on an effect size not given by $R^2$ but rather given by $f=\sqrt{R^2/(1-R^2)}$.  This value is called Cohen's $f^2$, which is different than our F statistic.  For two samples there's a similar value called Cohen's $d$ statistic which is found via $\frac{\bar{x}_1-\bar{x}_2}{s}$.  Using Cohen's $f$ we can find power via:
+
+```{r,warning=FALSE}
+library(pwr)
+R2=.1
+f=sqrt(R2/(1-R2))
+pwr.anova.test(f=f,k=5,n=10)
+```
+
+Which matches Table 1.6.4.  We can then change:
+
+```{r,warning=FALSE}
+R2=.3
+f=sqrt(R2/(1-R2))
+pwr.anova.test(f=f,k=5,n=10)
+```
+Or change People within group
+```{r,warning=FALSE}
+R2=.1
+f=sqrt(R2/(1-R2))
+pwr.anova.test(f=f,k=5,n=20)
+```
