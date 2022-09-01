@@ -30,11 +30,10 @@ Their statistical question was:
 The data was fit using:
 
 ```{r}
-ACFT=read.csv("ACFT.csv")
+ACFT=read.csv("https://raw.githubusercontent.com/nick3703/MA376/master/ACFT.csv")
 ACFT<-ACFT %>% mutate(Participantf=as.factor(Participant))
 GrassSand=ACFT %>% filter(Surface %in%c("G","S", "S "))%>%droplevels()
 GrassSand$Surface[GrassSand$Surface=="S "]<- "S"
-levels(GrassSand$Surface)
 GrassSand <- GrassSand %>%mutate(Surface=as.factor(Surface))
 contrasts(GrassSand$Surface)=contr.sum
 lm.mod<-lm(Sled~Surface,data=GrassSand)
