@@ -1,0 +1,51 @@
+SchoolName,SFRatio,SchoolSize,Tuition,Type,GradRate
+Pomona College,7,1-5,49352,Private,91
+Occidental College,10,1-5,51070,Private,82
+Claremount Mckenna,8,1-5,50945,Private,77
+Santa Clara University,12,5-10,47112,Private,77
+Univeristy of Southern California,9,>20,52283,Private,77
+Stanford University,11,10-20,47940,Private,75
+UCLA,16,>20,12920,Public,74
+UC Berkeley,17,>20,13509,Public,73
+UC Irvine,19,>20,13360,Public,72
+Loyola Marymount University,11,5-10,44230,Private,70
+Otis College of Art and Design,6,1-5,44020,Private,65
+John Paul the Great Catholic University,21,<1,24900,Private,63
+American Jewish University,4,<1,30463,Private,63
+San Francisco Conservatory of Music,7,<1,43410,Private,61
+Whitier College,12,1-5,44574,Private,60
+California Lutheran University,15,1-5,39793,Private,60
+University of San Francisco,14,10-20,44494,Private,60
+UC Santa Cruz,18,10-20,13539,Public,55
+Dominican University of California,9,1-5,43400,Private,53
+Biola University,15,5-10,36696,Private,52
+Bethesda University of California,10,<1,7360,Private,45
+California Baptist University,18,5-10,31371,Private,44
+University of the Pacific,13,5-10,44588,Private,44
+West Coast University,14,1-5,33675,Private,43
+California Maritime University,14,1-5,6808,Public,42
+Cal Poly Slo,22,>20,9075,Public,40
+Simpson University,9,1-5,25950,Private,38
+California College of the Arts,9,1-5,45466,Private,35
+Menlo College,14,<1,39950,Private,32
+San Fransico Art Institute,10,<1,43090,Private,32
+San Diego State University,28,>20,7084,Public,30
+Notre Dame de Namur University,11,1-5,33268,Private,28
+Coleman University,7,<1,20725,Private,25
+La Sierra University,14,1-5,31590,Private,23
+CSU Chico,25,10-20,7040,Public,23
+Hope International University,14,1-5,30550,Private,23
+CSU Monterey Bay,22,5-10,6379,Public,21
+Art Center College of Design,9,1-5,40596,Private,20
+Life Pacific College,16,<1,14138,Private,19
+San Francisco State,25,>20,6484,Public,18
+CSU Fullerton,25,>20,6560,Public,17
+Humboldt State University,23,5-10,7209,Public,16
+Long Beach State,24,>20,6460,Public,16
+National Univesity,20,10-20,10016,Private,13
+CSU Bakersfield,27,5-10,6857,Public,13
+CSU East Bay,27,10-20,6564,Public,13
+Azusa Pacific,11,10-20,36120,Private,8
+CSU Sacramento,27,>20,6900,Public,7
+CSU Dominguez Hills,25,10-20,6423,Public,6
+UC Merced,18,5-10,13262,Public,5
