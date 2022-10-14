@@ -1,0 +1,29 @@
+---
+title: "Writ 1"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+Our text discusses a study in Vitamin C levels using 3 brands with 2 levels of water PH and 2 temperatures. How many treatments do we have if we consider brand as a blocking variable (not a treatment).  
+
+\vspace{1.in}
+
+How many glasses of orange juice (in total) would we need in our study if we want to test for the effect of brand, the effect of PH, the effect of temperature, and the interaction between PH and temperature? Note here we are thinking of brand as a blocking variable
+
+\vspace{1.in}
+
+Give the source and degrees of freedom from the ANOVA table for the study above
+
+\vspace{1.in}
+
+Explain, in words, what it would mean if we found a significant effect due to water, temperature, and the interaction between water and temperature.
+
+\vspace{2.in}
+
+Write out, using proper notation, the statistical model associated with this experiment.
+

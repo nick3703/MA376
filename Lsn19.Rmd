@@ -16,7 +16,7 @@ Recall last class we built a model with both quantitative and categorical explan
 
 \vspace{1.5in}
 
-For this reason, we can think about these models as having seperate intercepts but the same slope.  For our home prices, what we are saying with our models is that the relationship between square footage and price is the same for both lake front and not lake front houses, but the baseline cost differs.  To put itn another way, if we have two houses, one on the lakefront and one not on the lakefront, the difference between the two prices is always expected to be:
+For this reason, we can think about these models as having separate intercepts but the same slope.  For our home prices, what we are saying with our models is that the relationship between square footage and price is the same for both lake front and not lake front houses, but the baseline cost differs.  To put itn another way, if we have two houses, one on the lakefront and one not on the lakefront, the difference between the two prices is always expected to be:
 
 \vspace{.5in}
 
@@ -30,7 +30,7 @@ house.dat %>% ggplot(aes(x=sqft,y=price,color=lake))+geom_point()+
   stat_smooth(method="lm",se=FALSE,fullrange=T)
 ```
 
-Here we decided to draw seperate regression lines for each group (Note the `group_by` command prior to plotting).  What can we say about the difference of the differences?
+Here we decided to draw separate regression lines for each group (Note the `group_by` command prior to plotting).  What can we say about the difference of the differences?
 
 \vspace{.5in}
 
