@@ -1,0 +1,171 @@
+---
+title: "Lsn 19 In"
+author: "Clark"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6)
+library(tidyverse)
+```
+
+## Admin
+
+Recall we previously looked a pisatcio bleaching where we had three values of air velocity and three values of drying temperature.  Recall that we fit the model:
+
+
+\vspace{1.in}
+
+Why might we be less than satisfied by this model or this analysis?
+
+\vspace{1.in}
+
+As it turns out, there were three values for air velocity and three values of drying temperature. 
+
+Let's think about designing this study a bit.  Why might our researches have chosen 60, 75, and 90, as our temperatures and 1.5,2, and 2.5 as our air velocity values?
+
+\vspace{.5in}
+
+If our researchers had 45 pistachios to study, how should they allocate pistachios to temperature and air velocity? Why?
+
+\vspace{1.in}
+
+
+```{r}
+pistachio.raw<-read.table("http://www.isi-stats.com/isi2/data/pistachioStudy.txt",header=T)
+pistachio.dat <- pistachio.raw %>% mutate(Peroxide=Peroxide..remaining.)%>%
+  select(-Peroxide..remaining.)
+pistachio.dat<-pistachio.dat %>% select(Temperature,AirVelocity,Peroxide)
+```
+
+One way to explore the data is to look at pairs plots
+
+```{r,warning=FALSE, out.width='60%',message=FALSE,fig.align="center"}
+library(GGally)
+pistachio.dat %>% ggpairs()
+```
+
+What is this output showing us?
+
+\vspace{1.in}
+
+```{r,warning=FALSE}
+library(rgl)
+Temp=pistachio.dat$Temperature
+Velocity=pistachio.dat$AirVelocity
+Peroxide=pistachio.dat$Peroxide
+plot3d(Temp,Velocity,Peroxide)
+```
+
+Note that this might lead to the model:
+
+
+\vspace{1.in}
+
+To fit this, we can fit:
+
+```{r}
+pistachio.lm<-lm(Peroxide~AirVelocity+Temperature,data=pistachio.dat)
+summary(pistachio.lm)
+```
+
+So our fitted model is:
+
+\vspace{1.in}
+
+Our conclusion based on the p values is:
+
+\vspace{1.in}
+
+Let's take a look at the univariate models:
+
+```{r}
+uni1.lm<-lm(Peroxide~Temperature,data=pistachio.dat)
+summary(uni1.lm)
+```
+
+What do we note about the value of temperature?  Is this surprising?
+
+\vspace{.5in}
+
+What about the SE?  Why might this be?
+
+\vspace{.5in}
+
+```{r}
+uni2.lm<-lm(Peroxide~AirVelocity,data=pistachio.dat)
+summary(uni2.lm)
+```
+
+What is the relationship between $R^2$ in the full model and $R^2$ in our two univariate models?  Why might this be?
+
+If we look at $R^2$ of the two univariate models, which covariate explains more variation, Temperature or Air Velocity?
+
+\vspace{.5in}
+
+Looking at $\hat{\beta}_1$ and $\hat{\beta}_2$ which value is bigger?  Is this surprising in light of what we found when looking at $R^2$ values?
+
+
+\vspace{.5in}
+
+The biggest issue here is we are on different scales.  In order to get rid of scaling we standardize, which is:
+
+\vspace{.5in}
+
+When we have standardized coefficients we can compare values to determine which one has a larger effect.
+
+```{r}
+pistachio.std<-pistachio.raw %>%mutate(Peroxide=Peroxide..remaining.)%>%
+  select(std.temp,std.air,std.peroxide,Peroxide)
+std.lm<-lm(Peroxide~std.temp+std.air,data=pistachio.std)
+summary(std.lm)
+```
+
+Note here our intercept actually means something.  
+
+\vspace{.5in}
+
+
+To see if this is a good model, we can examine the residuals:
+
+```{r,out.width='60%',fig.align="center"}
+std.lm %>%ggplot(aes(x=.fitted,y=.resid,color=as.factor(std.temp)))+geom_point()
+```
+
+Do we have any concerns?  What happens when temp is high?  
+
+\vspace{.5in}
+
+A model with an interaction term:
+
+\vspace{1.in}
+
+For a fixed $X_2$ what happens as we change $X_1$ by 1 unit?  
+
+\vspace{.5in}
+
+Conversely, for a fixed $X_1$ what happens when we change $X_2$ by 1 unit?
+
+\vspace{.5in}
+
+```{r}
+inter.lm<-lm(Peroxide~std.temp*std.air,data=pistachio.std)
+summary(inter.lm)
+```
+
+What's going on here?  What are we testing?  
+
+\vspace{.5in}
+
+Here we see that $R^2$ is still additive
+
+Note that our $\textbf{X}$ matrix becomes:
+
+\vspace{1.in}
+
+Which is nested with the $\textbf{X}$ matrix without an interaction, so we can test whether a model with an interaction is preferable through:
+
+```{r}
+anova(std.lm,inter.lm)
+```
+
