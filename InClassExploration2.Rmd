@@ -1,0 +1,65 @@
+---
+title: "In Class Exploration 2"
+author: "20 Pts"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE,fig.width=12, fig.height=6,fig.show = "hide")
+library(tidyverse)
+library(GGally)
+```
+
+
+Read the prompt for the problem on Page 443 in the text entitled \textit{Investigating Predicting Wine Prices}.
+The data can be downloaded from:
+
+
+```{r}
+Grapes <- read.csv("https://raw.githubusercontent.com/nick3703/MA376/master/Wine.csv")
+
+
+```
+
+1. Identify the observational/experimental units
+
+2. What is the response variable? Create a visualization that allows you to explore the response. Describe the distribution of the response variable.
+
+3. Take a look at the data. What do you notice about the price index of the 1961 vintage? In context of the study does this make sense? Why or why not?
+
+4. Write out, using proper statistical notation, both the statistical as well as the fitted (predicted) model for the single means model. Note, to find the fitted model you will need to find the mean and the standard error of the residuals.
+
+5. It is common belief that wines tend to get better with age, and so maybe older wines tend to be more expensive than younger wines. Create a scatterplot comparing price to age. Describe the association. Are there any potential outliers?
+
+6. Let's now consider the univariate regression using age to explain Price Index from Age. Write out the statistical model and give the fitted model.
+
+7. What linear regression assumption is violated? Why might taking the Log of your response variable be appropriate here?
+
+To fix this we will fit the model:
+
+\begin{align*}
+y_i &= \beta_0 + \beta_1 x_{i} + \epsilon_i\\
+\epsilon_i & \sim N(0, \sigma)\\
+i &= \mbox{Wine}\\
+y_i &= \mbox{Log of Price Index for Wine }i\\
+x_i &= \mbox{Age of Wine }i
+\end{align*}
+
+The R Code to fit the model is given below:
+
+```{r}
+
+log_model <- lm(LogPriceIndex~Age,data=Grapes)
+summary(log_model)
+
+
+```
+
+
+8. Assuming the validity conditions are met, interpret the P-value for Age in context of the problem.
+
+9. Explain, in context of the problem, what it would mean for there to be an interaction between age and summer temperature.
+
+10. Now, fit a model with log(price index) as the response, and age, summer temperature, harvest rain, and winter rain as predictors. Report the prediction equation. 
+
+11. Is this model \textbf{better} than the model only using Age as a predictor. How are you deciding?

@@ -1,0 +1,155 @@
+---
+title: "MA376 Applied Statistics: Lesson 9"
+subtitle: "Paired Data"
+author: "COL Nick Clark"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+show_cadets_results <- TRUE
+```
+
+```{r}
+library(tidyverse)
+```
+
+I was once asked to consult on a project with DPE examining the surface on which the ACFT sled pull was conducted.  They wanted to demonstrate that there was an effect due to the surface.  They took 25 volunteers and had them do the sled pull on both grass and sand.
+
+Their *initial* sources of variation diagram was:
+
+| Observed variation in: | Sources of explained variation: | Sources of unexplained variation: |
+|------------------------|------------------------|------------------------|
+| Inclusion Criteria:    |                                 |                                   |
+|                        |                                 |                          
+|                        |                                 |                          
+|                        |                                 |                          |
+| Design:                |                                 |                                   |
+|                        |                                 |                                   |
+|                        |                                 |                          
+|                        |                                 |                          
+
+Let's specify the model used for this type of experiment:
+
+\vspace{1.in}
+
+Their statistical question was:
+
+\vspace{1.in}
+
+The data was fit using:
+
+```{r}
+# Load the data.
+grass_sand_df <- read_csv("https://raw.githubusercontent.com/nick3703/MA376/master/ACFT.csv") %>%
+  mutate(Participant = as.factor(Participant)) %>% 
+  mutate(Surface = ifelse(Surface %in% c("S","S "), "S", Surface)) %>% 
+  filter(Surface %in% c("G","S")) %>%
+  mutate(Surface = as.factor(Surface)) %>% 
+  droplevels()
+
+# Fit the effects model.
+contrasts(grass_sand_df$Surface) = contr.sum
+surface_lm <- lm(Sled ~ Surface, data = grass_sand_df)
+summary(surface_lm)
+anova(surface_lm)
+```
+
+\vspace{.7in}
+
+What is our conclusion?
+
+\vspace{.7in}
+
+Let's dig into the individual participant sled pull times.
+
+```{r}
+grass_sand_df %>% 
+  ggplot(aes(x = Sled, y = Surface, group = Participant, col = Surface)) +
+  geom_point(size = 2) + 
+  geom_line(col = "black") + 
+  labs(title = "Sled Pull Times for 25 Individuals on Grass and Sand",
+       x = "Sled Pull Time",
+       y = "Surface")
+```
+
+What can we learn by looking at this plot?
+
+\vspace{.7in}
+
+Let's modify our sources of variation diagram. Our plot revealed a major source of unexplained variation, but it doesn't have to remain unexplained!
+
+| Observed variation in: | Sources of explained variation: | Sources of unexplained variation: |
+|------------------------|------------------------|------------------------|
+| Inclusion Criteria:    |                                 |                                   |
+|                        |                                 |                          
+|                        |                                 |                          
+|                        |                                 |                          |
+| Design:                |                                 |                                   |
+|                        |                                 |                                   |
+|                        |                                 |                          
+|                        |                                 |                          
+
+Let's write out a new statistical model:
+
+\vspace{1.in}
+
+Does the hypothesis we are testing change?
+
+\vspace{.7in}
+
+There are two ways we can approach this statistical question. Let's consider a single subject and see what happens if we take the difference of our two observations.
+
+\vspace{.7in}
+
+These differences are typically analyzed using a paired *t*-test.  Instead of our two observed values for each subject, we are looking at our differences.
+
+```{r}
+diff_df <- grass_sand_df %>% 
+  group_by(Participant) %>% 
+  arrange(Surface) %>% # This is to help us compute sand minus grass.
+  summarize(diff = diff(Sled))%>%
+  select(diff)
+```
+
+Then we can just do a standard one sample *t*-test to see if the difference is indeed zero.
+
+```{r}
+n <- nrow(diff_df)
+y_vals <- diff_df$diff
+t_stat <- mean(y_vals) / (sd(y_vals) / sqrt(n))
+p_val <- 2 * (1 - pt(abs(t_stat), n-1))
+p_val
+```
+
+You can do this procedure in R using `t.test()`:  
+
+```{r}
+t.test(y_vals)
+```
+
+The second way to analyze the data (which will be more helpful for this class) is to continue in an ANOVA framework:
+
+Recall the original model that ignored the repeated nature of the two measures on each participants:
+
+```{r}
+contrasts(grass_sand_df$Participant) = contr.sum
+surface_lm <- lm(Sled ~ Surface, data = grass_sand_df)
+anova(surface_lm)
+```
+
+Now let's see what value is added by considering the observations in pairs.
+
+```{r}
+full_surface_lm<-lm(Sled ~ Surface + Participant, data = grass_sand_df)
+anova(full_surface_lm)
+```
+
+In the ANOVA table we see that by adding a second factor (`Participant`) we have actually taken some of our unexplained variation (residuals) and explained it through `Participant`.  This makes the *F*-statistic for `Surface` bigger because we are no longer comparing 103.392 to 55.56, but rather 103.392 to 6.57.  Note other things that change in this new ANOVA table.
+
+\vspace{1.in}
+
+Let's see how the sums of squares calculations have changed:
